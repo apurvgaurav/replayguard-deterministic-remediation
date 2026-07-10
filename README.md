@@ -12,6 +12,13 @@ This is not a production security product. It is a focused prototype to show the
 
 ---
 
+
+## Demo Preview
+
+![ReplayGuard audit ledger showing ALLOW, BLOCK, and REVIEW decisions](assets/screenshots/final/07-clean-ledger-allow-block-review.png)
+
+---
+
 ## Why I built this
 
 AI-assisted software development is moving fast. Code can now be generated, changed, and remediated very quickly.
