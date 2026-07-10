@@ -1,0 +1,30 @@
+[
+  {
+    "id": "rule_sql_injection",
+    "name": "SQL Injection Detection",
+    "pattern": "query\\s*=\\s*[\"']SELECT\\s+.*\\s+WHERE\\s+(\\w+)\\s*=\\s*[\"']\\s*\\+\\s*(\\w+)",
+    "severity": "CRITICAL",
+    "description": "SQL query built using string concatenation. Risk of SQL injection."
+  },
+  {
+    "id": "rule_hardcoded_secret",
+    "name": "Hardcoded API Key Detection",
+    "pattern": "([A-Z_]+_KEY)\\s*=\\s*[\"']([a-zA-Z0-9_]{6,})[\"']",
+    "severity": "CRITICAL",
+    "description": "Hardcoded API key detected in plaintext code."
+  },
+  {
+    "id": "rule_unsafe_shell",
+    "name": "Unsafe Shell Command Detection",
+    "pattern": "subprocess\\.run\\([\"'](\\w+)\\s+([a-zA-Z0-9_\\-]+)\\s*[\"']\\s*\\+\\s*(\\w+),\\s*shell=True\\)",
+    "severity": "HIGH",
+    "description": "Subprocess execution using shell=True with dynamic arguments. Risk of shell injection."
+  },
+  {
+    "id": "rule_unsafe_eval",
+    "name": "Unsafe Eval Execution Detection",
+    "pattern": "eval\\(.*\\)",
+    "severity": "CRITICAL",
+    "description": "Unsafe use of eval() detected, allowing execution of arbitrary code strings."
+  }
+]

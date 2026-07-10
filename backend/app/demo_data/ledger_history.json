@@ -1,0 +1,502 @@
+[
+  {
+    "timestamp": "2026-07-09T21:22:18.371181",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T21:22:18.369671",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T21:22:18.368101",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T21:22:18.366598",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "8bd9aa9e74f0c5f52afaac0e4ac8d090c8799870a3de9b3d21890e64a08d299e",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "0379bd80e97bc35af3b1da59f2031105b48d7bf36f1252bf29ce85235ee2b8d1"
+  },
+  {
+    "timestamp": "2026-07-09T21:22:18.365046",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "f014a3a20f67fcbc4fef9ad8dd6a51dadd956d659e76d554e19ede5630af1b1b",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "63f4388b0730d11660001115986378904f7aeacee1c9e64dc725ce615722a6b9"
+  },
+  {
+    "timestamp": "2026-07-09T21:22:18.363266",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T21:22:18.361477",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.665469",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.663872",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.662164",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.660575",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "7e5599f18718fca700ff725b1a113722127a7cfdeab016634dd16c8a1c314c95",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "0d904cc5b0cb484ad9d871e90e87cf11f944638cff832e14057d8cffc2746c2e"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.659015",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "6e34ab6744c302566bf9359eb8d2415c072ef3f76eb97ac9ac46b65b43754ea3",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "a1605cd0ddade7b8d3844c26b5b0b85e9f0761885d37742241bffe03d90a41b2"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.657133",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T21:20:52.655252",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.206926",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.205292",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.203627",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.202022",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "e142ff14e64fcf611d75b9e4c0e337579aab57158fea64ffcb537f82ba637dde",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "032a39760ec073024be3c8d19f311ea17376073c6417370270e9284a86d6503c"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.200453",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "5525ad040ab82ce0ccf2e760d3d2292445ff72a289159d6bd452da4318a70efb",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "9008c02e34c330e0b07c7e9b5a9b37061d156427651cf03438f59ba8271a372c"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.198614",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T20:45:06.196783",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.833456",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.831901",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.830300",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.828729",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "e8f11dac1a05d6fa36d13e1cf671e14318166b201db64e67c8f5cfc470ab6a59",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "5a3081aadf5623c6e4b5e8ae0042c74cf707e6a0107c16b446db558473758a88"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.827247",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "8db37e874552718cb8707ac12e911ae3540bfb5c946a0a10d5611862c6edc5f1",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "125984a66b7b47f790153d5b4e8381f7b645a92f022b7a147f4558e2be0f1639"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.825474",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T20:29:21.823696",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.012058",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.010486",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.008805",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.007274",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "10176de5e1dfc4fe26db6e261deeaec47f2a5b8ae172590814d91563d46edee5",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "5996691477d637cdcb1b075d7eb5f1173dbed6226bcae2fa896df23f2c0f028a"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.005811",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "d374a31ae8b717081c2e057ef9c28f1afbc737a769aa1d484287a8c60cc39518",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "d2fd324306344ca329f7ad2c0c2be4148942d28d905fd120cae82026221d9a25"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.004070",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T20:26:10.002262",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.767422",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.765889",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.764245",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.762762",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "10a28bcbdac4aaca1f3fda67fc607244bd34fe549b9ae71b5a6d966cf600c072",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "a5458215837c1fab60680ae5aba2a639deb3944d5f47708d045ce7c9a4bec811"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.761232",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "885360360765405ff9c6ca238821828e6e8f488f50694b8b5963d6ad6f27e52a",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "6fd73837cd8ae4b5155f1212e2d71529f95e4d47541812bd6416e554fb1675ab"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.759485",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:53.757750",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.983118",
+    "original_code_hash": "60361c36d8123d1c3f58f642b5a821dbdb47be29522d94e2672caf5941e4d5e9",
+    "rule_id": "rule_unsafe_shell",
+    "template_id": "template_unsafe_shell",
+    "patch_run_1_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "patch_run_2_hash": "70a12e9b3316efd18e658c44cd79a72569f1426b64de086fa02b385bd8a9a1b3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "cdf8757b83bd7d2a5d980004aabd96895c5405c909440855ba7b4c7d77f66395"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.981554",
+    "original_code_hash": "4d8c435c06feb58b6801d88d7190ef965b72f93ef643213404892f7c201ad913",
+    "rule_id": "rule_hardcoded_secret",
+    "template_id": "template_hardcoded_secret",
+    "patch_run_1_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "patch_run_2_hash": "783ce2aa62c8bc1dad4995a43f9bbfd74cb825a9951fbb4ceaafc4d62ca35de3",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "2615169cd19d892089f3f85523271fa25248dff951b28ee8a922da84aca6e92d"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.966975",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "f8398db0303cf6b199fd23252636e1e50730d08f8aaf330c7593cc91c76a4bb3",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "81b8ade991732cf48faf3c313654592a6e2bff0304f4f0a340038f1b64c8e035"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.965534",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "gate_decision": "ALLOW",
+    "ledger_hash": "460cc9b995dc1ae1db572e69804e951662befc43b47598ad8d70e9fab990ebe2"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.964062",
+    "original_code_hash": "f6118b4e49c8d09ad484a0ef838dbba98544f95a63a29ac58ce8833fd9395dcd",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "7ae63756e0293622fb6e52ccc4b5de9aff31193fbbda4aadf1f9985a1d9c4628",
+    "patch_run_2_hash": "05e1bb2197aa29aff82e3a5772cc3f512bb718917f08dfab3c48c348e7186b53",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "c442eefd135a80149e096bbbd0a55ee57ad0663d3debbfb93a8a487550d6af2f"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.962643",
+    "original_code_hash": "c33380db57f77e72c072a1a6381b40e2ed66df39f5e960884da50d71b12171c0",
+    "rule_id": "rule_sql_injection",
+    "template_id": "template_sql_injection",
+    "patch_run_1_hash": "0a01e0103636fc5c1f960dbfe72b5493f089476f195349bc13e272a34866d74e",
+    "patch_run_2_hash": "f778c12afe6cc32eb982916a1d97ffe482ba73f0f776a8adfe1644eed51699b8",
+    "gate_decision": "BLOCK",
+    "ledger_hash": "da506621432fd395d95c2af103bf626b81332546fdfc0ee6c4716e03a2e9a467"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.960951",
+    "original_code_hash": "d42e8f8bf0323e7078327531c485758395bf6dd0728b0f453eef02963131e51a",
+    "rule_id": "rule_unsafe_eval",
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "75caf9281b056061809de6fe749f727acdf682a861a7248279324b4c18ae4c74"
+  },
+  {
+    "timestamp": "2026-07-09T20:25:00.959274",
+    "original_code_hash": "3830152984c7730812c624294da9ca84169be924a4800e62659a89b6bbc21b1c",
+    "rule_id": null,
+    "template_id": null,
+    "patch_run_1_hash": null,
+    "patch_run_2_hash": null,
+    "gate_decision": "REVIEW",
+    "ledger_hash": "d28230c232970c54b4115eec81d3e48ffa9edad38af4d3921628d3b54ed571a4"
+  }
+]

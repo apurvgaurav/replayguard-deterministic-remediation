@@ -1,0 +1,23 @@
+[
+  {
+    "id": "template_sql_injection",
+    "rule_id": "rule_sql_injection",
+    "search_pattern": "^([ \\t]*)query\\s*=\\s*[\"']SELECT\\s+(.*)\\s+WHERE\\s+(\\w+)\\s*=\\s*[\"']\\s*\\+\\s*(\\w+)",
+    "replace_pattern": "\\1query = \"SELECT \\2 WHERE \\3 = ?\"\n\\1params = (\\4,)",
+    "additional_imports": []
+  },
+  {
+    "id": "template_hardcoded_secret",
+    "rule_id": "rule_hardcoded_secret",
+    "search_pattern": "([A-Z_]+_KEY)\\s*=\\s*[\"']([a-zA-Z0-9_]{6,})[\"']",
+    "replace_pattern": "\\1 = os.getenv(\"\\1\")",
+    "additional_imports": ["import os"]
+  },
+  {
+    "id": "template_unsafe_shell",
+    "rule_id": "rule_unsafe_shell",
+    "search_pattern": "subprocess\\.run\\([\"'](\\w+)\\s+([a-zA-Z0-9_\\-]+)\\s*[\"']\\s*\\+\\s*(\\w+),\\s*shell=True\\)",
+    "replace_pattern": "subprocess.run([\"\\1\", \"\\2\", \\3], shell=False)",
+    "additional_imports": []
+  }
+]
