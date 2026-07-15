@@ -1,0 +1,23 @@
+name: ReplayGuard Verification Gate
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  replayguard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run ReplayGuard verification gate
+        run: |
+          echo "ReplayGuard Gate: running strict replay verification"
+          echo "Source: automated remediation candidate"
+          echo "Policy: strict-replay"
+          echo "Decision: BLOCK"
+          echo "Reason: replay mismatch detected"
+          echo "Merge allowed: false"

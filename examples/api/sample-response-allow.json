@@ -1,0 +1,15 @@
+{
+  "decision": "ALLOW",
+  "reason": "Replay verification matched. Ledger-style evidence was recorded.",
+  "matched_rule": "sql_injection_string_concatenation",
+  "template_id": "sql_parameterized_query_template",
+  "comparison": {
+    "byte_level_match": true,
+    "patch_run_1_hash": "sha256:example_patch_run_1",
+    "patch_run_2_hash": "sha256:example_patch_run_2"
+  },
+  "ledger": {
+    "ledger_hash": "sha256:example_ledger_hash",
+    "evidence_recorded": true
+  }
+}

@@ -19,6 +19,60 @@ This is not a production security product. It is a focused prototype to show the
 
 ---
 
+
+## Why ReplayGuard is Different
+
+ReplayGuard is not another code scanner and it is not another AI code generator.
+
+Existing tools usually focus on finding issues, suggesting fixes, or running tests. ReplayGuard focuses on a different question:
+
+> Can an automated fix prove that it is reproducible before it is trusted?
+
+An AI tool, scanner, internal script, or human developer may propose a remediation. ReplayGuard treats that remediation as untrusted until it can be replayed, compared byte-for-byte, recorded as evidence, and gated.
+
+This makes ReplayGuard a verification layer around automated remediation.
+
+---
+
+## Why This Matters Now
+
+AI-assisted development is making code changes faster. That speed is useful, but it creates a trust problem.
+
+If automated remediation enters software delivery workflows, teams need to know:
+
+- Was the issue actually detected?
+- What rule or template produced the fix?
+- Can the same fix be reproduced?
+- Did replay outputs match exactly?
+- Was evidence recorded before allowing the change?
+- Should the change be allowed, blocked, or routed to human review?
+
+ReplayGuard demonstrates this trust gate.
+
+---
+
+## Integration Patterns
+
+ReplayGuard can be understood in four ways:
+
+1. Dashboard demo for visual explanation
+2. API-based verification service
+3. SDK-style developer integration
+4. CI/CD merge gate for automated remediation workflows
+
+The current prototype demonstrates the core verification workflow. The `examples/` folder shows how the same pattern could be used in real engineering environments.
+
+Current example patterns include:
+
+- API scan request and sample ALLOW / BLOCK responses
+- SDK-style developer workflow
+- CI/CD gate example
+- mobile/API secret remediation example
+- AI-agent patch verification example
+- enterprise buyer use cases
+
+---
+
 ## Why I built this
 
 AI-assisted software development is moving fast. Code can now be generated, changed, and remediated very quickly.
