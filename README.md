@@ -1,6 +1,6 @@
 # ReplayGuard
 
-ReplayGuard is a working prototype based on my issued U.S. Patent **US 12,670,085 B1**.
+ReplayGuard is a patent-backed prototype for evidence-backed verification of automated code remediation. It is based on selected ideas from my issued U.S. Patent **US 12,670,085 B1**.
 
 I built it to make one idea visible:
 
@@ -70,6 +70,29 @@ Current example patterns include:
 - mobile/API secret remediation example
 - AI-agent patch verification example
 - enterprise buyer use cases
+
+---
+
+
+## Strategy Documents
+
+- [Executive Brief](docs/executive-brief.md)
+- [Product Vision](docs/product-vision.md)
+- [Differentiation](docs/differentiation.md)
+- [Professor Brief](docs/professor-brief.md)
+- [Architecture](docs/architecture.md)
+- [Limitations](docs/limitations.md)
+
+---
+
+## Example Integration Patterns
+
+- [API examples](examples/api/)
+- [SDK-style example](examples/sdk/python_sdk_example.py)
+- [CI/CD gate example](examples/cicd/)
+- [Mobile/API secret example](examples/mobile/)
+- [AI-agent verification example](examples/ai-agent/)
+- [Enterprise buyer use cases](examples/enterprise/buyer-use-cases.md)
 
 ---
 
