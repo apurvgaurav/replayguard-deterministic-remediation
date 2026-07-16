@@ -397,6 +397,44 @@ export default function App() {
         </div>
       </header>
 
+      <section className="trust-gate-hero" aria-label="Where ReplayGuard sits">
+        <div className="trust-gate-kicker">WHERE REPLAYGUARD SITS</div>
+
+        <h2>ReplayGuard separates fix generation from fix trust.</h2>
+
+        <p className="trust-gate-summary">
+          AI agents, scanners, internal scripts, or developers may propose a patch.
+          ReplayGuard does not trust the patch until it is replayed, compared, evidenced, and gated.
+        </p>
+
+        <div className="trust-gate-flow">
+          <div className="trust-gate-sources">
+            <div className="trust-gate-chip">AI Agent</div>
+            <div className="trust-gate-chip">SAST Scanner</div>
+            <div className="trust-gate-chip">Internal Script</div>
+            <div className="trust-gate-chip">Human Patch</div>
+          </div>
+
+          <div className="trust-gate-arrow">→</div>
+
+          <div className="trust-gate-core">
+            <div className="trust-gate-core-title">ReplayGuard Trust Gate</div>
+            <div className="trust-gate-core-subtitle">
+              Replay • Byte-Compare • Record Evidence • Gate
+            </div>
+          </div>
+
+          <div className="trust-gate-arrow">→</div>
+
+          <div className="trust-gate-outcomes">
+            <div className="trust-gate-outcome allow">ALLOW</div>
+            <div className="trust-gate-outcome block">BLOCK</div>
+            <div className="trust-gate-outcome review">REVIEW</div>
+          </div>
+        </div>
+      </section>
+
+
       {/* Product Explanation Banner */}
       <div className="bg-[#0b0e17] border-b border-slate-800/80 py-3 px-4 text-center">
         <p className="text-xs text-slate-300 font-medium tracking-wide">
@@ -411,7 +449,7 @@ export default function App() {
         <section className="lg:col-span-5 flex flex-col gap-6">
           <div className="glass-panel rounded-xl p-6 shadow-xl flex flex-col gap-5">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-blue-400">
-              <FileCode className="w-5 h-5" /> Vulnerability Input
+              <FileCode className="w-5 h-5" /> Remediation Verification Input
             </h2>
 
             {/* Selector */}
@@ -549,7 +587,7 @@ export default function App() {
                 <Database className="w-12 h-12 text-slate-500" />
               </div>
               <div className="max-w-md">
-                <h3 className="text-lg font-semibold text-slate-200">Awaiting Pipeline Invocation</h3>
+                <h3 className="text-lg font-semibold text-slate-200">Awaiting Trust Gate Run</h3>
                 <p className="text-sm text-slate-400 mt-2 leading-relaxed">
                   Select a vulnerable scan scenario on the left, set simulation properties, and trigger the pipeline. The system will demonstrate deterministic detection, dual independent remediation replays, byte-level comparison, and merge decisioning.
                 </p>
@@ -558,15 +596,15 @@ export default function App() {
               <div className="grid grid-cols-3 gap-4 w-full max-w-lg mt-4 text-xs">
                 <div className="border border-slate-800/80 bg-[#0b0e17] rounded-lg p-3">
                   <span className="text-emerald-500 font-bold block mb-1">ALLOW Gate</span>
-                  Replays match. The patch is stable & reproducible.
+                  Replay matched. Evidence recorded.
                 </div>
                 <div className="border border-slate-800/80 bg-[#0b0e17] rounded-lg p-3">
                   <span className="text-rose-500 font-bold block mb-1">BLOCK Gate</span>
-                  Replays differ. Safety check failed.
+                  Replay failed. Change stopped.
                 </div>
                 <div className="border border-slate-800/80 bg-[#0b0e17] rounded-lg p-3">
                   <span className="text-amber-500 font-bold block mb-1">REVIEW Gate</span>
-                  No matching rule or template is available.
+                  No deterministic path. Human review required.
                 </div>
               </div>
             </div>

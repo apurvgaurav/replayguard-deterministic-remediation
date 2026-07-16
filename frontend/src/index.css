@@ -78,3 +78,116 @@ pre, code {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+
+/* ReplayGuard trust-gate visual */
+.trust-gate-hero {
+  margin: 24px 0;
+  padding: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
+.trust-gate-kicker {
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: #93c5fd;
+  margin-bottom: 10px;
+}
+
+.trust-gate-hero h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  color: #f8fafc;
+}
+
+.trust-gate-summary {
+  max-width: 920px;
+  margin: 0 0 18px;
+  color: #cbd5e1;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.trust-gate-flow {
+  display: grid;
+  grid-template-columns: 1.25fr auto 1.1fr auto 0.9fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.trust-gate-sources,
+.trust-gate-outcomes {
+  display: grid;
+  gap: 10px;
+}
+
+.trust-gate-sources {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trust-gate-chip,
+.trust-gate-outcome {
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-align: center;
+  font-weight: 700;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.78);
+  color: #e2e8f0;
+}
+
+.trust-gate-core {
+  padding: 20px;
+  border-radius: 18px;
+  text-align: center;
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  background: rgba(30, 64, 175, 0.2);
+}
+
+.trust-gate-core-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.trust-gate-core-subtitle {
+  font-size: 1rem;
+  color: #bfdbfe;
+}
+
+.trust-gate-arrow {
+  color: #93c5fd;
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.trust-gate-outcome.allow {
+  color: #bbf7d0;
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.trust-gate-outcome.block {
+  color: #fecaca;
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.trust-gate-outcome.review {
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+@media (max-width: 900px) {
+  .trust-gate-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-gate-arrow {
+    transform: rotate(90deg);
+  }
+}
