@@ -1,0 +1,20 @@
+{
+  "source": "ai_agent",
+  "agent_name": "example-remediation-agent",
+  "workflow": "ai_assisted_code_remediation",
+  "language": "python",
+  "issue_type": "sql_injection",
+  "original_code": "query = \"SELECT * FROM users WHERE id = \" + user_id",
+  "proposed_patch": "query = \"SELECT * FROM users WHERE id = ?\"\\nparams = (user_id,)",
+  "trust_policy": {
+    "requires_replay": true,
+    "requires_byte_comparison": true,
+    "requires_evidence_record": true,
+    "allowed_gate_decisions": [
+      "ALLOW",
+      "BLOCK",
+      "REVIEW"
+    ]
+  },
+  "expected_replayguard_role": "ReplayGuard does not generate the patch in this example. It verifies whether the proposed automated remediation can be replayed, compared, evidenced, and gated before trust is granted."
+}

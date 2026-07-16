@@ -76,6 +76,8 @@ Current example patterns include:
 
 ## Strategy Documents
 
+- [Validation plan](docs/validation-plan.md)
+
 - [Executive one-pager](docs/executive-one-pager.md)
 
 - [Audience and product strategy](docs/audience-and-product-strategy.md)
@@ -90,6 +92,9 @@ Current example patterns include:
 ---
 
 ## Example Integration Patterns
+
+- [AI-agent patch request example](examples/ai-agent/agent_patch_request.json)
+- [Sample CI/CD PR gate output](examples/cicd/sample-pr-gate-output.md)
 
 - [API examples](examples/api/)
 - [SDK-style example](examples/sdk/python_sdk_example.py)
