@@ -191,3 +191,96 @@ pre, code {
     transform: rotate(90deg);
   }
 }
+
+/* Premium executive demo polish */
+.trust-gate-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(147, 197, 253, 0.28);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(59, 130, 246, 0.18), transparent 34%),
+    radial-gradient(circle at 82% 28%, rgba(34, 197, 94, 0.10), transparent 28%),
+    linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(20, 31, 54, 0.95));
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.trust-gate-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.06), transparent);
+  opacity: 0.9;
+}
+
+.trust-gate-kicker {
+  color: #bfdbfe;
+  text-shadow: 0 0 18px rgba(96, 165, 250, 0.45);
+}
+
+.trust-gate-hero h2 {
+  letter-spacing: -0.03em;
+  text-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.trust-gate-summary {
+  color: #dbeafe;
+}
+
+.trust-gate-chip {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.68));
+  border-color: rgba(148, 163, 184, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.22);
+}
+
+.trust-gate-core {
+  position: relative;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.28), transparent 58%),
+    linear-gradient(180deg, rgba(30, 64, 175, 0.38), rgba(30, 41, 59, 0.62));
+  border-color: rgba(147, 197, 253, 0.62);
+  box-shadow:
+    0 0 0 1px rgba(147, 197, 253, 0.08),
+    0 0 38px rgba(37, 99, 235, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.trust-gate-core-title {
+  letter-spacing: -0.01em;
+}
+
+.trust-gate-arrow {
+  text-shadow: 0 0 18px rgba(147, 197, 253, 0.7);
+}
+
+.trust-gate-outcome {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.68));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.trust-gate-outcome.allow {
+  box-shadow:
+    0 0 24px rgba(34, 197, 94, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.trust-gate-outcome.block {
+  box-shadow:
+    0 0 24px rgba(239, 68, 68, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.trust-gate-outcome.review {
+  box-shadow:
+    0 0 24px rgba(245, 158, 11, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}

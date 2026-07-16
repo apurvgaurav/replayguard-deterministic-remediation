@@ -438,7 +438,7 @@ export default function App() {
       {/* Product Explanation Banner */}
       <div className="bg-[#0b0e17] border-b border-slate-800/80 py-3 px-4 text-center">
         <p className="text-xs text-slate-300 font-medium tracking-wide">
-          ReplayGuard demonstrates deterministic code remediation where a patch must be replayed, byte-compared, and recorded before a merge decision is allowed.
+          Automated remediation should not move forward on confidence alone. ReplayGuard requires replay evidence before a gate decision is allowed.
         </p>
       </div>
 
