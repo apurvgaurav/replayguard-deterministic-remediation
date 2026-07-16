@@ -76,6 +76,8 @@ Current example patterns include:
 
 ## Strategy Documents
 
+- [Executive one-pager](docs/executive-one-pager.md)
+
 - [Audience and product strategy](docs/audience-and-product-strategy.md)
 
 - [Executive Brief](docs/executive-brief.md)
