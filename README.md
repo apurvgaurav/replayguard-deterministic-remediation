@@ -76,6 +76,8 @@ Current example patterns include:
 
 ## Strategy Documents
 
+- [Audience and product strategy](docs/audience-and-product-strategy.md)
+
 - [Executive Brief](docs/executive-brief.md)
 - [Product Vision](docs/product-vision.md)
 - [Differentiation](docs/differentiation.md)
