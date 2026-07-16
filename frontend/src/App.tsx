@@ -455,7 +455,7 @@ export default function App() {
             {/* Selector */}
             <div>
               <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                Load Scan Scenario
+                Load Verification Scenario
               </label>
               <select
                 value={selectedScenarioId}
@@ -589,7 +589,7 @@ export default function App() {
               <div className="max-w-md">
                 <h3 className="text-lg font-semibold text-slate-200">Awaiting Trust Gate Run</h3>
                 <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                  Select a vulnerable scan scenario on the left, set simulation properties, and trigger the pipeline. The system will demonstrate deterministic detection, dual independent remediation replays, byte-level comparison, and merge decisioning.
+                  Select a remediation verification scenario on the left, set simulation properties, and run the trust gate. The system will demonstrate deterministic detection, dual independent remediation replays, byte-level comparison, evidence recording, and gate decisioning.
                 </p>
               </div>
               
