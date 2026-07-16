@@ -88,3 +88,41 @@ ReplayGuard reframes the question from:
 to:
 
 > Can an automated fix prove it should be trusted?
+
+---
+
+## What this prototype shows vs. what comes next
+
+The current ReplayGuard prototype shows the core trust workflow:
+
+- selected remediation scenarios
+- deterministic templates
+- replay verification
+- byte-level comparison
+- ledger-style evidence
+- ALLOW / BLOCK / REVIEW decisions
+- API, SDK, CI/CD, mobile/API, AI-agent, and enterprise example patterns
+
+It does not claim to be a complete production platform yet.
+
+It is not a full mobile app, published SDK, production CI/CD plugin, complete scanner, or guarantee of secure code.
+
+That scope is intentional.
+
+The prototype proves the trust gate. The roadmap expands it into product surfaces such as:
+
+- verification API
+- SDK
+- CI/CD gate
+- signed evidence ledger
+- policy engine
+- AI-agent verification layer
+- human review router
+
+## Executive takeaway
+
+The commercial value is not another scanner.
+
+The commercial value is control.
+
+ReplayGuard helps frame how enterprises can adopt AI-assisted and automated remediation without blindly trusting every automated change.

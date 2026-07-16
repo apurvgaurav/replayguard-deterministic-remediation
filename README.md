@@ -96,6 +96,54 @@ Current example patterns include:
 
 ---
 
+
+## Prototype Scope vs. Product Roadmap
+
+The current prototype is intentionally focused.
+
+It proves the core trust-gate workflow:
+
+detect issue
+→ apply deterministic remediation
+→ replay remediation
+→ compare outputs
+→ record evidence
+→ return ALLOW, BLOCK, or REVIEW
+
+The prototype does **not** claim to be a full mobile application, published SDK, production CI/CD plugin, complete SAST engine, or production security platform.
+
+That is intentional.
+
+The MVP proves the verification pattern. The product roadmap expands the surfaces around it.
+
+### What the prototype shows today
+
+- dashboard demo
+- backend API
+- selected deterministic remediation scenarios
+- replay verification
+- byte-level comparison
+- ledger-style evidence
+- ALLOW / BLOCK / REVIEW gate decisions
+- example patterns for API, SDK, CI/CD, mobile/API, AI-agent, and enterprise use cases
+
+### What comes next
+
+- real GitHub Action or CI/CD plugin
+- published SDK package
+- stronger parser, AST, and taint-flow analysis
+- broader language and vulnerability coverage
+- signed or external evidence ledger
+- policy engine for enterprise gates
+- benchmark evaluation on real-world repositories
+- deeper AI-agent remediation verification
+
+The current version is narrow by design. The product thesis is broader:
+
+> automated remediation should not be trusted until it can be replayed, compared, evidenced, and gated.
+
+---
+
 ## Why I built this
 
 AI-assisted software development is moving fast. Code can now be generated, changed, and remediated very quickly.

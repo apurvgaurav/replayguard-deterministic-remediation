@@ -112,3 +112,47 @@ ReplayGuard moves automated remediation from:
 to:
 
 > verified under replay
+
+---
+
+## Prototype scope vs. product roadmap
+
+The current prototype is intentionally narrow.
+
+It proves the core verification pattern:
+
+detect issue
+→ apply deterministic remediation
+→ replay remediation
+→ compare outputs
+→ record evidence
+→ gate the decision
+
+The prototype does not claim to be a full mobile app, production SDK, published CI/CD plugin, complete SAST engine, or production security platform.
+
+That scope is intentional.
+
+The MVP proves the trust gate. The roadmap expands the integration surfaces.
+
+## Roadmap expansion
+
+A stronger product version can include:
+
+- GitHub Action, Jenkins, or GitLab integration
+- published SDK package
+- API service for remediation verification
+- stronger parser, AST, and taint-flow analysis
+- broader language support
+- signed or external evidence ledger
+- enterprise policy engine
+- human review workflow integration
+- AI-agent remediation verification
+- benchmark evaluation on real-world repositories
+
+## Product principle
+
+ReplayGuard separates fix generation from fix trust.
+
+The AI may propose. The scanner may detect. The script may patch.
+
+ReplayGuard asks for evidence before the change moves forward.

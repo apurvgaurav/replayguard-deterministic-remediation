@@ -83,3 +83,40 @@ Can AI fix code?
 to:
 
 Can an automated fix prove it should be trusted?
+
+---
+
+## What ReplayGuard does not replace
+
+ReplayGuard does not replace:
+
+- SAST tools
+- CI/CD tests
+- secure code review
+- human security review
+- software supply chain controls
+- production release approval
+
+ReplayGuard adds a missing verification boundary around automated remediation.
+
+The question is not only whether an issue was found or whether a fix was generated.
+
+The ReplayGuard question is:
+
+Can the remediation be replayed, compared, evidenced, and gated before it is trusted?
+
+## Why the current prototype looks simple
+
+The current examples are intentionally small because the first goal is to make the trust-gate workflow easy to inspect.
+
+The basic scenario is not the invention.
+
+The invention is the control boundary around remediation:
+
+automated fix remains untrusted
+→ replay verification runs
+→ byte-level comparison checks reproducibility
+→ evidence is recorded
+→ gate returns ALLOW, BLOCK, or REVIEW
+
+A future version can expand detection depth, language coverage, integration surfaces, policy controls, and evidence storage.
