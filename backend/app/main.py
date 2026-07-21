@@ -9,7 +9,7 @@ from app.services.rule_engine import RuleEngine
 from app.services.replay import ReplayController
 from app.services.comparator import ByteComparator
 from app.services.gate import MergeGate
-from app.services.ledger import LedgerService
+from app.services.ledger import LedgerService, LedgerPersistenceError
 from app.services.normalize import normalize_code
 
 app = FastAPI(title="ReplayGuard API", description="Deterministic Remediation and Replay Verification Engine")
@@ -90,23 +90,68 @@ def scan_code(req: ScanRequest):
         diff_text = None
         size_diff = 0
 
-    # 4. Gate Decision
+    # 4. Determine candidate status and tentative decision
+    is_allow_candidate = (matched_rule is not None and applied_template_id is not None and is_match)
+
+    if is_allow_candidate:
+        tentative_decision = "ALLOW"
+        tentative_reason = "EVIDENCE_VERIFIED"
+    elif matched_rule is None:
+        tentative_decision = "REVIEW"
+        tentative_reason = "NO_RULE_MATCH"
+    elif applied_template_id is None:
+        tentative_decision = "REVIEW"
+        tentative_reason = "NO_TEMPLATE"
+    else:
+        tentative_decision = "BLOCK"
+        tentative_reason = "REPLAY_MISMATCH"
+
+    evidence_persisted = False
+    ledger_rec_dict = None
+
+    # 5. Record run to ledger
+    try:
+        ledger_rec_dict = ledger_service.record_run(
+            original_code=code_input,
+            rule_id=matched_rule.id if matched_rule else None,
+            template_id=applied_template_id,
+            patch_1=patch_run_1,
+            patch_2=patch_run_2,
+            gate_decision=tentative_decision
+        )
+        evidence_persisted = ledger_rec_dict.get("evidence_persisted", False)
+    except LedgerPersistenceError:
+        evidence_persisted = False
+
+    # Determine final gate decision using MergeGate.decide
     gate_decision = MergeGate.decide(
         rule_matched=matched_rule is not None,
         template_applied=applied_template_id is not None,
-        is_replay_match=is_match
+        is_replay_match=is_match,
+        evidence_persisted=evidence_persisted
     )
-    
-    # 5. Record run to ledger
-    ledger_rec_dict = ledger_service.record_run(
-        original_code=code_input,
-        rule_id=matched_rule.id if matched_rule else None,
-        template_id=applied_template_id,
-        patch_1=patch_run_1,
-        patch_2=patch_run_2,
-        gate_decision=gate_decision
-    )
-    
+
+    # Determine final reason code
+    if is_allow_candidate:
+        if evidence_persisted:
+            reason_code = "EVIDENCE_VERIFIED"
+        else:
+            reason_code = "EVIDENCE_PERSISTENCE_FAILED"
+    else:
+        reason_code = tentative_reason
+
+    # Ensure ledger record is populated
+    if ledger_rec_dict is None:
+        # Fallback record on write failure
+        ledger_rec_dict = ledger_service.generate_record(
+            original_code=code_input,
+            rule_id=matched_rule.id if matched_rule else None,
+            template_id=applied_template_id,
+            patch_1=patch_run_1,
+            patch_2=patch_run_2,
+            gate_decision=gate_decision
+        )
+
     ledger_record = LedgerRecord(**ledger_rec_dict)
     
     comparison = ComparisonResult(
@@ -133,11 +178,14 @@ def scan_code(req: ScanRequest):
         else:
             explanation = "No issues detected. Code is safe."
     elif gate_decision == "BLOCK":
-        is_mismatch_scenario = (normalize_code(code_input).strip() == 'query = "SELECT * FROM users WHERE id = " + user_id')
-        if is_mismatch_scenario:
-            explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible."
+        if reason_code == "EVIDENCE_PERSISTENCE_FAILED":
+            explanation = "Safety Violation: Ledger persistence failed. Merging blocked."
         else:
-            explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked."
+            is_mismatch_scenario = (normalize_code(code_input).strip() == 'query = "SELECT * FROM users WHERE id = " + user_id')
+            if is_mismatch_scenario:
+                explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible."
+            else:
+                explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked."
     elif gate_decision == "REVIEW":
         if matched_rule:
             explanation = "Violation detected, but no deterministic remediation template is available. Human review required."
@@ -154,7 +202,8 @@ def scan_code(req: ScanRequest):
         comparison=comparison,
         ledger_record=ledger_record,
         gate_decision=gate_decision,
-        explanation=explanation
+        explanation=explanation,
+        reason_code=reason_code
     )
 
 @app.get("/api/ledger", response_model=List[LedgerRecord])

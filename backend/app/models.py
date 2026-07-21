@@ -36,6 +36,8 @@ class LedgerRecord(BaseModel):
     patch_run_2_hash: Optional[str] = None
     gate_decision: str
     ledger_hash: str
+    evidence_persisted: bool = False
+    record_id: Optional[str] = None
 
 class ScanResponse(BaseModel):
     original_code: str
@@ -48,3 +50,4 @@ class ScanResponse(BaseModel):
     ledger_record: LedgerRecord
     gate_decision: str  # ALLOW, BLOCK, REVIEW
     explanation: Optional[str] = None
+    reason_code: str
