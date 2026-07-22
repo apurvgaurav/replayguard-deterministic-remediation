@@ -1,329 +1,188 @@
 # ReplayGuard
 
-ReplayGuard is a patent-backed prototype for evidence-backed verification of automated code remediation. It is based on selected ideas from my issued U.S. Patent **US 12,670,085 B1**.
+[![ReplayGuard CI](https://github.com/apurvgaurav/replayguard-deterministic-remediation/actions/workflows/ci.yml/badge.svg)](https://github.com/apurvgaurav/replayguard-deterministic-remediation/actions/workflows/ci.yml)
 
-I built it to make one idea visible:
+A patent-backed prototype for evidence-gated verification of deterministic code remediation. This repository demonstrates selected concepts associated with issued U.S. Patent US 12,670,085 B1. It is an explanatory prototype rather than a production security product.
 
-> An automated code fix should not move forward just because it looks correct. It should be replayed, compared, and recorded first.
+## Reviewer Preview
 
-The prototype demonstrates deterministic code remediation with replay verification, byte-level comparison, ledger-style evidence, and merge gate decisioning.
+![ReplayGuard ALLOW decision showing an active backend, trust-gate context, and reviewer-facing authorization evidence](assets/screenshots/final/08-hardened-authorization-evidence-allow.png)
 
-This is not a production security product. It is a focused prototype to show the core workflow behind the patent.
+*ALLOW scenario showing the active backend, trust-gate decision, and reviewer-facing authorization evidence. BLOCK and REVIEW are available as separate built-in scenarios.*
 
----
+## Technical Thesis
 
+A proposed remediation remains untrusted until both runs generate patches from consistent template identity, version, and canonical hash; both satisfy the configured postconditions; their normalized UTF-8 outputs match byte-for-byte; and the evidence record is successfully persisted and verified by strict readback.
 
-## Demo Preview
-
-![ReplayGuard audit ledger showing ALLOW, BLOCK, and REVIEW decisions](assets/screenshots/final/07-clean-ledger-allow-block-review.png)
-
----
-
-
-## Why ReplayGuard is Different
-
-ReplayGuard is not another code scanner and it is not another AI code generator.
-
-Existing tools usually focus on finding issues, suggesting fixes, or running tests. ReplayGuard focuses on a different question:
-
-> Can an automated fix prove that it is reproducible before it is trusted?
-
-An AI tool, scanner, internal script, or human developer may propose a remediation. ReplayGuard treats that remediation as untrusted until it can be replayed, compared byte-for-byte, recorded as evidence, and gated.
-
-This makes ReplayGuard a verification layer around automated remediation.
-
----
-
-## Why This Matters Now
-
-AI-assisted development is making code changes faster. That speed is useful, but it creates a trust problem.
-
-If automated remediation enters software delivery workflows, teams need to know:
-
-- Was the issue actually detected?
-- What rule or template produced the fix?
-- Can the same fix be reproduced?
-- Did replay outputs match exactly?
-- Was evidence recorded before allowing the change?
-- Should the change be allowed, blocked, or routed to human review?
-
-ReplayGuard demonstrates this trust gate.
-
----
-
-## Integration Patterns
-
-ReplayGuard can be understood in four ways:
-
-1. Dashboard demo for visual explanation
-2. API-based verification service
-3. SDK-style developer integration
-4. CI/CD merge gate for automated remediation workflows
-
-The current prototype demonstrates the core verification workflow. The `examples/` folder shows how the same pattern could be used in real engineering environments.
-
-Current example patterns include:
-
-- API scan request and sample ALLOW / BLOCK responses
-- SDK-style developer workflow
-- CI/CD gate example
-- mobile/API secret remediation example
-- AI-agent patch verification example
-- enterprise buyer use cases
-
----
-
-
-## Strategy Documents
-
-- [Validation plan](docs/validation-plan.md)
-
-- [Executive one-pager](docs/executive-one-pager.md)
-
-- [Audience and product strategy](docs/audience-and-product-strategy.md)
-
-- [Executive Brief](docs/executive-brief.md)
-- [Product Vision](docs/product-vision.md)
-- [Differentiation](docs/differentiation.md)
-- [Professor Brief](docs/professor-brief.md)
-- [Architecture](docs/architecture.md)
-- [Limitations](docs/limitations.md)
-
----
-
-## Example Integration Patterns
-
-- [AI-agent patch request example](examples/ai-agent/agent_patch_request.json)
-- [Sample CI/CD PR gate output](examples/cicd/sample-pr-gate-output.md)
-
-- [API examples](examples/api/)
-- [SDK-style example](examples/sdk/python_sdk_example.py)
-- [CI/CD gate example](examples/cicd/)
-- [Mobile/API secret example](examples/mobile/)
-- [AI-agent verification example](examples/ai-agent/)
-- [Enterprise buyer use cases](examples/enterprise/buyer-use-cases.md)
-
----
-
-
-## Prototype Scope vs. Product Roadmap
-
-The current prototype is intentionally focused.
-
-It proves the core trust-gate workflow:
-
-detect issue
-→ apply deterministic remediation
-→ replay remediation
-→ compare outputs
-→ record evidence
-→ return ALLOW, BLOCK, or REVIEW
-
-The prototype does **not** claim to be a full mobile application, published SDK, production CI/CD plugin, complete SAST engine, or production security platform.
-
-That is intentional.
-
-The MVP proves the verification pattern. The product roadmap expands the surfaces around it.
-
-### What the prototype shows today
-
-- dashboard demo
-- backend API
-- selected deterministic remediation scenarios
-- replay verification
-- byte-level comparison
-- ledger-style evidence
-- ALLOW / BLOCK / REVIEW gate decisions
-- example patterns for API, SDK, CI/CD, mobile/API, AI-agent, and enterprise use cases
-
-### What comes next
-
-- real GitHub Action or CI/CD plugin
-- published SDK package
-- stronger parser, AST, and taint-flow analysis
-- broader language and vulnerability coverage
-- signed or external evidence ledger
-- policy engine for enterprise gates
-- benchmark evaluation on real-world repositories
-- deeper AI-agent remediation verification
-
-The current version is narrow by design. The product thesis is broader:
-
-> automated remediation should not be trusted until it can be replayed, compared, evidenced, and gated.
-
----
-
-## Why I built this
-
-AI-assisted software development is moving fast. Code can now be generated, changed, and remediated very quickly.
-
-That creates a trust problem.
-
-Before an automated fix is accepted, I want to know:
-
-- What issue was detected?
-- What rule or template created the fix?
-- Can the same fix be reproduced?
-- Did both remediation runs match byte-for-byte?
-- Was evidence recorded before the change moved forward?
-
-ReplayGuard is my prototype for exploring that workflow.
-
-The main point is simple:
-
-> Faster code changes need stronger evidence before they are trusted.
-
----
-
-## What the prototype does
-
-ReplayGuard takes a code sample and runs it through this flow:
+## Core Authorization Invariant
 
 ```text
-Code input
-→ rule detection
-→ deterministic remediation template
-→ patch run 1
-→ patch run 2
-→ byte-level comparison
-→ ledger evidence
-→ merge gate decision
-The gate decision can be:
+ALLOW =
+  rule matched
+  AND template applied
+  AND template ID, version, and hash consistent across both runs
+  AND both runs generated patches and passed configured postconditions
+  AND normalized run 1 UTF-8 bytes == normalized run 2 UTF-8 bytes
+  AND evidence persistence verified
+```
 
-* ALLOW — replay matched and evidence was recorded
-* BLOCK — replay mismatch was detected
-* REVIEW — an issue was detected, but no deterministic remediation template was available
+If any required ALLOW condition fails, ReplayGuard must not return ALLOW.
 
-⸻
+## Decision Contract
 
-Demo scenarios
+| Decision | Reason Code | Description |
+| :--- | :--- | :--- |
+| **ALLOW** | `EVIDENCE_VERIFIED` | Rule matched, both runs generated patches with consistent template metadata, configured postconditions passed, normalized UTF-8 outputs matched byte-for-byte, and evidence persistence was verified. |
+| **BLOCK** | `REPLAY_MISMATCH` | Rule matched and both runs satisfied the configured template postconditions, but their normalized UTF-8 outputs did not match byte-for-byte. |
+| **BLOCK** | `TEMPLATE_ATTESTATION_FAILED` | Rule matched and a template was selected, but one or both runs failed patch generation, template ID/version/hash consistency, or configured postcondition validation. |
+| **BLOCK** | `EVIDENCE_PERSISTENCE_FAILED` | All authorization checks passed, but the local evidence write, replacement, or strict readback verification failed. |
+| **REVIEW** | `NO_TEMPLATE` | Rule matched, but no deterministic remediation template is configured for the rule. |
+| **REVIEW** | `NO_RULE_MATCH` | No vulnerability signature/rule matched the input code. |
 
-The current prototype supports five scenarios:
+## Verification Workflow
 
-1. SQL Injection via Concatenation → ALLOW
-2. Hardcoded API Key Credential → ALLOW
-3. Unsafe Shell Execution → ALLOW
-4. Replay Mismatch - Block Merge → BLOCK
-5. No Template - Human Review Required → REVIEW
+```mermaid
+flowchart TD
+    A[Code input] --> B[Rule detection and template lookup]
+    B --> C[Two remediation runs when a template is available]
+    C --> D[Validate template metadata and postconditions, then compare normalized UTF-8 bytes]
+    D --> E[Local evidence write and strict readback]
+    E --> F[Gate decision and reason code]
+```
 
-I included both success and failure paths because a trust gate should not only approve changes. It also needs to block or route work to review when evidence is not strong enough.
+## Implemented Prototype Features
 
-⸻
+* **FastAPI Backend**: Hosts the analysis, remediation, replay, comparison, and local evidence-ledger APIs.
+* **React/Vite Frontend**: Reviewer dashboard for running scenarios and inspecting evidence.
+* **Vulnerability Rules**: Selected Python rules (SQL injection, hardcoded secrets, unsafe shell).
+* **Deterministic Templates**: Remediation templates featuring versioning and exact match-count enforcement.
+* **Replay Template Attestation**: Requires both runs to produce patches, report matching template ID, version, and canonical hash, and satisfy the configured postconditions.
+* **Normalized UTF-8 Byte Comparison & SHA-256 Hashes**: Normalizes line endings, removes trailing whitespace from each line and leading/trailing blank lines, compares the resulting UTF-8 bytes exactly, hashes both normalized outputs, and produces a unified diff when they differ.
+* **Controlled Fault Injection**: Explicitly appends a randomized controlled-fault marker to Run 2 for mismatch testing.
+* **Local JSON Persistence**: Uses a same-process lock, same-directory temporary file, file flush and `fsync`, and `os.replace`.
+* **Strict Readback Verification**: Re-reads the newest persisted record, recomputes its evidence-record hash, and verifies its record ID, stored hash, timestamp, and evidence-persisted flag against the expected values.
+* **Evidence-Record Hash Recomputation**: Recomputes the SHA-256 record hash from the selected persisted evidence fields during strict readback.
+* **UTC Timestamps & Record IDs**: Unique UUIDs and ISO 8601 timestamps for each evidence run.
+* **Automated GitHub Actions CI**: Continuous validation of tests and production builds.
 
-What is real in this prototype
+*Note: The prototype does not implement formal verification, semantic equivalence proofs, process-level isolation, digital signatures, or immutable or tamper-evident ledger storage.*
 
-This prototype currently includes:
+## Evidence Record Schema
 
-* FastAPI backend
-* React/Vite frontend
-* Frontend connected to backend APIs
-* Rule-based detection for selected scenarios
-* Deterministic remediation templates
-* Independent patch run 1 and patch run 2
-* Byte-level comparison
-* SHA-256 hash generation
-* Ledger-style audit records
-* ALLOW, BLOCK, and REVIEW gate decisions
-* Backend tests for success, mismatch, and review scenarios
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `record_id` | `string` | Unique UUID generated for the run. |
+| `timestamp` | `string` | ISO 8601 UTC timestamp. |
+| `original_code_hash` | `string` | SHA-256 hash of the input code. |
+| `rule_id` | `string \| null` | ID of the matched rule. |
+| `template_id` | `string \| null` | ID of the applied template. |
+| `template_version` | `string \| null` | Configured template semantic version. |
+| `template_hash` | `string \| null` | SHA-256 hash of the canonical template definition. |
+| `patch_run_1_hash` | `string \| null` | SHA-256 hash of the normalized first remediation output. |
+| `patch_run_2_hash` | `string \| null` | SHA-256 hash of the normalized second remediation output. |
+| `template_postconditions_passed` | `boolean \| null` | Aggregate replay-template attestation result covering patch generation, template ID/version/hash consistency, and configured postconditions. |
+| `reason_code` | `string \| null` | Specific rationale for the gate decision. |
+| `gate_decision` | `string` | Final gate status (`ALLOW`, `BLOCK`, `REVIEW`). |
+| `evidence_persisted` | `boolean` | Indicates whether the local JSON write and strict readback verification succeeded. |
+| `ledger_hash` | `string` | SHA-256 hash over the selected evidence fields used by the current record-hash payload. |
 
-Current backend test status:
-7 passed
-What is simplified
+*Note: The `ledger_hash` is an unkeyed evidence-record hash. It is not a digital signature and does not authenticate the record against an attacker who can rewrite both the record and its hash.*
 
-This is a prototype, not a full production SAST or DevSecOps platform.
+## Demonstration Scenarios
 
-The current version is intentionally narrow:
+| Scenario | Decision | Details |
+| :--- | :--- | :--- |
+| **SQL Injection via Concatenation** | `ALLOW` | Rule matches, the parameterized remediation template is applied, postconditions pass, and both normalized remediation outputs match byte-for-byte. |
+| **Hardcoded API Key Credential** | `ALLOW` | The secret is replaced with an environment-variable lookup, postconditions pass, and both normalized remediation outputs match byte-for-byte. |
+| **Unsafe Shell Execution** | `ALLOW` | The shell invocation is replaced with list-based subprocess execution, postconditions pass, and both normalized remediation outputs match byte-for-byte. |
+| **Replay Mismatch** | `BLOCK` | Controlled fault injection appends a randomized marker to Run 2, causing the normalized UTF-8 outputs to differ. |
+| **Unsafe eval** | `REVIEW` | The rule matches, but no template is configured, so the change is routed to human review. |
 
-* It supports selected Python examples only
-* The rule engine is simple
-* The remediation templates are demo templates
-* The ledger is local demo storage
-* CI/CD is represented as a merge gate decision, not a live pipeline integration
-* It does not guarantee that code is secure
+## Verification Results
 
-That scope is intentional. The goal is to demonstrate the replay-verification workflow clearly before expanding the system.
+* **28 Backend Tests**: Test coverage includes gate authorization, persistence failures, template semantics, concurrent writes, replay mismatch, hash verification, and REVIEW paths.
+* **Python Matrix**: CI runs the backend test suite on Python 3.9 and 3.12.
+* **Frontend Build**: Verified production Vite bundling in CI.
+* **Demo Safety**: CI verifies that `backend/app/demo_data/ledger_history.json` is not modified by tests.
+* **Test Isolation**: Backend tests write to temporary directories.
 
-⸻
+Verify the workflow details in [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
-Architecture
+## Reproduce Locally
 
-ReplayGuard has two main parts:
-backend/   FastAPI service for scanning, remediation, replay, comparison, ledger, and gate decisions
-frontend/  React/Vite dashboard for running scenarios and viewing evidence
-docs/      Architecture, walkthrough, demo script, limitations, and professor brief
-assets/    Screenshots and visual artifacts
-Main backend endpoints:
-GET  /api/scenarios
-POST /api/scan
-GET  /api/ledger
-POST /api/ledger/clear
-GET  /api/health
-Run locally
+Clone the repository and run backend tests:
+```bash
+git clone https://github.com/apurvgaurav/replayguard-deterministic-remediation.git
+cd replayguard-deterministic-remediation
+python3 -m venv backend/.venv
+source backend/.venv/bin/activate
+python -m pip install -r backend/requirements.txt
+backend/.venv/bin/python -m pytest -q backend
+```
+*Expected output: `28 passed`*
 
-Backend
-cd backend
-source venv/bin/activate
-uvicorn app.main:app --reload --port 8000
-API docs:
-http://127.0.0.1:8000/docs
-Frontend
+Start the backend:
+```bash
+backend/.venv/bin/python -m uvicorn app.main:app --reload --port 8000 --app-dir backend
+```
+*FastAPI documentation is available at http://127.0.0.1:8000/docs.*
+
+Start the frontend in a second terminal:
+```bash
 cd frontend
-npm install
+npm ci
 npm run dev
-Frontend runs on the port shown by Vite, usually:
-http://localhost:5174/
-Run tests
-cd backend
-source venv/bin/activate
-pytest
-Expected result:
-7 passed
-Screenshots
+```
+*Vite prints the local URL to access the dashboard.*
 
-Final demo screenshots are stored under:
-assets/screenshots/final/
-Recommended screenshot set:
-01-home-backend-active.png
-02-sql-injection-allow-main.png
-02-sql-injection-allow-replay-ledger.png
-03-hardcoded-secret-allow-main.png
-03-hardcoded-secret-allow-replay-ledger.png
-04-unsafe-shell-allow-main.png
-04-unsafe-shell-allow-replay-ledger.png
-05-replay-mismatch-block-main.png
-05-replay-mismatch-block-replay-ledger.png
-06-no-template-review-main.png
-06-no-template-review-replay-ledger.png
-07-clean-ledger-allow-block-review.png
-Known limitations
+To verify the production build:
+```bash
+npm run build
+```
 
-ReplayGuard demonstrates the core idea, not the full future system.
+## API Surface
 
-A production version would need:
+* `GET /api/health`: Health status.
+* `GET /api/scenarios`: Available demo scenarios.
+* `POST /api/scan`: Submits code for scanning, remediation, and gating.
+* `GET /api/ledger`: Retrieves evidence history.
+* `POST /api/ledger/clear`: Clears local evidence records.
 
-* deeper parsing
-* stronger AST and taint-flow analysis
-* broader language support
-* real CI/CD integration
-* signed or external ledger storage
-* stronger policy controls
-* larger test coverage
-* security review
+## Repository Map
 
-I am keeping the current prototype focused because the first job is to make the replay-verification concept easy to understand and easy to inspect.
-Patent reference
+* [backend/app/](backend/app/): Main application code, local demo data, services, models, and template engine.
+* [backend/tests/](backend/tests/): Test suite for gate invariants, verification, and templates.
+* [frontend/](frontend/): React / TypeScript dashboard interface.
+* [docs/](docs/): Architectural diagrams, differentiated goals, and product briefings.
+* [examples/](examples/): Reference integration patterns.
+* [assets/](assets/): Static visual assets.
 
-This prototype is based on selected concepts from my issued U.S. Patent:
+## Technical Boundaries
 
-US 12,670,085 B1 — Deterministic Offline Code Remediation with Ledger-Verified Replay and Template-Based Patch Generation
+* **Local JSON Evidence File**: Evidence is stored in a local JSON file, not in an immutable or externally administered evidence store.
+* **No Digital Signatures**: Record hashes are unkeyed integrity checks over selected fields and do not authenticate records.
+* **No Tamper-Evident Chain**: Records are not cryptographically chained to earlier records.
+* **In-Process Replay**: Both remediation runs execute inside the same runtime process.
+* **Simple Rule Engine**: The scanner demonstrates the workflow and is not a complete SAST or taint-analysis engine.
+* **Not a Semantic Proof**: Structural postconditions validate configured patterns; they do not prove semantic equivalence or security.
+* **Application-Level Gate**: The API returns a gate decision, but ReplayGuard is not currently installed as a required GitHub branch-protection check.
+* **No Security Guarantee**: An ALLOW decision means the configured prototype checks passed; it does not prove that the code is secure.
+* **Production Work Required**: A production system would require isolated execution, durable external evidence storage, stronger parsing and policy enforcement, broader evaluation, access controls, and independent security review.
 
-The prototype is a public demonstration of selected ideas from the patent. It is not presented as a production system.
-Author note
+## Patent Relationship
 
-I built ReplayGuard to make the patent easier to understand as a working system.
+ReplayGuard demonstrates selected implementation concepts associated with issued U.S. Patent US 12,670,085 B1, “Deterministic Offline Code Remediation with Ledger-Verified Replay and Template-Based Patch Generation.”
 
-The broader direction I am exploring is evidence-backed software automation: how automated code changes can be verified before they are trusted, especially as AI-assisted development becomes more common.
+This repository is a prototype designed to illustrate core flows. The implementation does not define the full legal scope of the patent, and this documentation is not a claim chart.
 
-My goal with this prototype is not to claim that every code issue can be fixed automatically. The goal is to show a more disciplined workflow:
+## Technical Documents and Examples
 
-detect the issue, apply a deterministic fix, replay it, compare it, record evidence, and only then decide whether the change should move forward.
+* [validation-plan.md](docs/validation-plan.md)
+* [architecture.md](docs/architecture.md)
+* [limitations.md](docs/limitations.md)
+* [executive-one-pager.md](docs/executive-one-pager.md)
+* [differentiation.md](docs/differentiation.md)
+* [agent_patch_request.json](examples/ai-agent/agent_patch_request.json)
+* [sample-pr-gate-output.md](examples/cicd/sample-pr-gate-output.md)
+
+ReplayGuard’s purpose is not to automate every fix; it is to require reproducible evidence before an automated fix is authorized to move forward.
