@@ -7,6 +7,7 @@ class Scenario(BaseModel):
     description: str
     language: str
     code: str
+    simulate_non_determinism: bool = False
 
 class ScanRequest(BaseModel):
     code: str
@@ -36,6 +37,12 @@ class LedgerRecord(BaseModel):
     patch_run_2_hash: Optional[str] = None
     gate_decision: str
     ledger_hash: str
+    evidence_persisted: bool = False
+    record_id: Optional[str] = None
+    reason_code: Optional[str] = None
+    template_version: Optional[str] = None
+    template_hash: Optional[str] = None
+    template_postconditions_passed: Optional[bool] = None
 
 class ScanResponse(BaseModel):
     original_code: str
@@ -48,3 +55,7 @@ class ScanResponse(BaseModel):
     ledger_record: LedgerRecord
     gate_decision: str  # ALLOW, BLOCK, REVIEW
     explanation: Optional[str] = None
+    reason_code: str
+    template_version: Optional[str] = None
+    template_hash: Optional[str] = None
+    template_postconditions_passed: Optional[bool] = None

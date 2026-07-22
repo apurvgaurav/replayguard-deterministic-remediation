@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Shield, 
   Play, 
@@ -16,8 +16,7 @@ import {
   Copy, 
   Check, 
   Trash2, 
-  Binary, 
-  HelpCircle 
+  Binary
 } from 'lucide-react';
 import { fallbackScenarios, Scenario } from './data/scenarios';
 
@@ -48,10 +47,17 @@ interface LedgerRecord {
   patch_run_2_hash: string | null;
   gate_decision: string;
   ledger_hash: string;
+  evidence_persisted?: boolean;
+  record_id?: string | null;
+  reason_code?: string | null;
+  template_version?: string | null;
+  template_hash?: string | null;
+  template_postconditions_passed?: boolean | null;
 }
 
 interface ScanResponse {
   original_code: string;
+  remediated_code: string | null;
   matched_rule: RuleMatch | null;
   applied_template_id: string | null;
   patch_run_1: string | null;
@@ -59,26 +65,21 @@ interface ScanResponse {
   comparison: ComparisonResult;
   ledger_record: LedgerRecord;
   gate_decision: string;
+  explanation: string | null;
+  reason_code: string | null;
+  template_version?: string | null;
+  template_hash?: string | null;
+  template_postconditions_passed?: boolean | null;
 }
 
-// Quick helper to generate a realistic mock SHA-256 hash for local simulation
-const generateMockHash = (str: string): string => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  const hex = Math.abs(hash).toString(16).padStart(8, '0');
-  // Extend it to look like a full 64-char SHA-256
-  return (hex + '8f7a9c3e5d1b4a6c2e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d').substring(0, 64);
-};
+
 
 export default function App() {
   const [scenarios, setScenarios] = useState<Scenario[]>(fallbackScenarios);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(fallbackScenarios[0].id);
   const [code, setCode] = useState<string>(fallbackScenarios[0].code);
   const [simulateNonDeterminism, setSimulateNonDeterminism] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -86,10 +87,11 @@ export default function App() {
   const [ledgerHistory, setLedgerHistory] = useState<LedgerRecord[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
 
   // Fetch scenarios and initial check
   useEffect(() => {
+    localStorage.removeItem('replayguard_ledger_history');
     const initFetch = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/scenarios`);
@@ -115,6 +117,7 @@ export default function App() {
     const scen = scenarios.find(s => s.id === id);
     if (scen) {
       setCode(scen.code);
+      setSimulateNonDeterminism(!!scen.simulate_non_determinism);
     }
   };
 
@@ -124,13 +127,11 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setLedgerHistory(data);
+      } else {
+        setLedgerHistory([]);
       }
     } catch (err) {
-      // If backend is offline, load from local storage
-      const local = localStorage.getItem('replayguard_ledger_history');
-      if (local) {
-        setLedgerHistory(JSON.parse(local));
-      }
+      setLedgerHistory([]);
     }
   };
 
@@ -140,7 +141,6 @@ export default function App() {
       setLedgerHistory([]);
     } catch (err) {
       setLedgerHistory([]);
-      localStorage.removeItem('replayguard_ledger_history');
     }
   };
 
@@ -154,216 +154,43 @@ export default function App() {
     setLoading(true);
     setErrorMsg(null);
     setResponse(null);
-    
-    // Animate through pipeline steps for visual engagement
     setActiveStep(1); // Scanning
     await new Promise(r => setTimeout(r, 600));
     setActiveStep(2); // Normalizing
     await new Promise(r => setTimeout(r, 600));
-    setActiveStep(3); // Replaying
-    await new Promise(r => setTimeout(r, 800));
-    setActiveStep(4); // Comparing & Ledgering
-    await new Promise(r => setTimeout(r, 600));
 
-    if (isBackendOnline) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/scan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            code,
-            language: 'python',
-            simulate_non_determinism: simulateNonDeterminism
-          })
-        });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language: 'python',
+          simulate_non_determinism: simulateNonDeterminism
+        })
+      });
 
-        if (res.ok) {
-          const data: ScanResponse = await res.json();
-          setResponse(data);
-          fetchLedger();
-        } else {
-          throw new Error("Failed to process scan API");
-        }
-      } catch (err) {
-        runLocalSimulation();
+      if (res.ok) {
+        setActiveStep(3); // Replaying
+        await new Promise(r => setTimeout(r, 800));
+        setActiveStep(4); // Comparing & Ledgering
+        await new Promise(r => setTimeout(r, 600));
+
+        const data: ScanResponse = await res.json();
+        setResponse(data);
+        fetchLedger();
+      } else {
+        throw new Error("Backend unavailable — no verified decision was produced.");
       }
-    } else {
-      runLocalSimulation();
+    } catch (err) {
+      setErrorMsg("Backend unavailable — no verified decision was produced.");
+      setResponse(null);
+      setActiveStep(0);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
-  // Pure frontend simulation engine in case backend isn't available
-  const runLocalSimulation = () => {
-    // 1. Detect matching rules
-    let matchedRule: RuleMatch | null = null;
-    let templateId: string | null = null;
-    let patch1: string | null = null;
-    let patch2: string | null = null;
-
-    if (code.includes('SELECT') && code.includes('WHERE') && code.includes('+')) {
-      matchedRule = {
-        id: "rule_sql_injection",
-        name: "SQL Injection Detection",
-        pattern: "query\\s*=\\s*[\"']SELECT\\s+.*\\s+WHERE\\s+(\\w+)\\s*=\\s*[\"']\\s*\\+\\s*(\\w+)",
-        severity: "CRITICAL",
-        description: "SQL query built using string concatenation. Risk of SQL injection."
-      };
-      templateId = "template_sql_injection";
-      patch1 = code.replace(
-        /^([ \t]*)query\s*=\s*["']SELECT\s+(.*)\s+WHERE\s+(\w+)\s*=\s*["']\s*\+\s*(\w+)/m,
-        '$1query = "SELECT $2 WHERE $3 = ?"\n$1params = ($4,)'
-      );
-    } else if (code.includes('API_KEY') && code.includes('=')) {
-      matchedRule = {
-        id: "rule_hardcoded_secret",
-        name: "Hardcoded API Key Detection",
-        pattern: "([A-Z_]+_KEY)\\s*=\\s*[\"']([a-zA-Z0-9_]{6,})[\"']",
-        severity: "CRITICAL",
-        description: "Hardcoded API key detected in plaintext code."
-      };
-      templateId = "template_hardcoded_secret";
-      patch1 = `import os\n\n` + code.replace(
-        /API_KEY\s*=\s*["']([a-zA-Z0-9_]{6,})["']/,
-        'API_KEY = os.getenv("API_KEY")'
-      );
-    } else if (code.includes('subprocess.run') && code.includes('shell=True')) {
-      matchedRule = {
-        id: "rule_unsafe_shell",
-        name: "Unsafe Shell Command Detection",
-        pattern: "subprocess\\.run\\([\"'](\\w+)\\s+([a-zA-Z0-9_\\-]+)\\s*[\"']\\s*\\+\\s*(\\w+),\\s*shell=True\\)",
-        severity: "HIGH",
-        description: "Subprocess execution using shell=True with dynamic arguments. Risk of shell injection."
-      };
-      templateId = "template_unsafe_shell";
-      patch1 = code.replace(
-        /subprocess\.run\(["'](\w+)\s+([a-zA-Z0-9_\-]+)\s*["']\s*\+\s*(\w+),\s*shell=True\)/,
-        'subprocess.run(["$1", "$2", $3], shell=False)'
-      );
-    } else if (code.includes('eval(')) {
-      matchedRule = {
-        id: "rule_unsafe_eval",
-        name: "Unsafe Eval Execution Detection",
-        pattern: "eval\\(.*\\)",
-        severity: "CRITICAL",
-        description: "Unsafe use of eval() detected, allowing execution of arbitrary code strings."
-      };
-      templateId = null;
-      patch1 = null;
-      patch2 = null;
-    }
-
-    // Prepare Run 2 (Simulate mismatch if toggled)
-    if (patch1) {
-      patch2 = patch1;
-      const isMismatchScenario = code.trim() === 'query = "SELECT * FROM users WHERE id = " + user_id';
-      if (simulateNonDeterminism || isMismatchScenario) {
-        const randToken = Math.random().toString(36).substring(2, 10);
-        patch2 = patch1 + `\n\n# ReplayGuard Non-Deterministic Seed: ${randToken}`;
-      }
-    }
-
-    // Determine decisions
-    let gateDecision = "REVIEW";
-    let isMatch = true;
-    let sizeDiff = 0;
-    let diff: string | null = null;
-
-    if (matchedRule && templateId && patch1 && patch2) {
-      isMatch = !simulateNonDeterminism;
-      const isMismatchScenario = code.trim() === 'query = "SELECT * FROM users WHERE id = " + user_id';
-      if (isMismatchScenario) {
-        isMatch = false;
-      }
-      
-      if (isMatch) {
-        gateDecision = "ALLOW";
-      } else {
-        gateDecision = "BLOCK";
-        sizeDiff = patch2.length - patch1.length;
-        diff = `--- patch_run_1.py\n+++ patch_run_2.py\n@@ -5,6 +5,8 @@\n     with open(filepath, 'r') as f:\n         return f.read()\n+\n+# ReplayGuard Non-Deterministic Seed: ${patch2.split('Seed: ')[1]}`;
-      }
-    } else if (matchedRule && !templateId) {
-      gateDecision = "REVIEW";
-      isMatch = false;
-      diff = "One or both patch runs failed to generate.";
-    }
-
-    const origHash = generateMockHash(code);
-    const p1Hash = patch1 ? generateMockHash(patch1) : "";
-    const p2Hash = patch2 ? generateMockHash(patch2) : "";
-    const combinedPayload = `${origHash}|${matchedRule?.id || ''}|${templateId || ''}|${p1Hash}|${p2Hash}|${gateDecision}`;
-    const ledgerHash = generateMockHash(combinedPayload);
-
-    const record: LedgerRecord = {
-      timestamp: new Date().toISOString(),
-      original_code_hash: origHash,
-      rule_id: matchedRule?.id || null,
-      template_id: templateId,
-      patch_run_1_hash: patch1 ? p1Hash : null,
-      patch_run_2_hash: patch2 ? p2Hash : null,
-      gate_decision: gateDecision,
-      ledger_hash: ledgerHash
-    };
-
-    let explanation = "";
-    if (gateDecision === "ALLOW") {
-      if (matchedRule) {
-        if (matchedRule.id === "rule_sql_injection") {
-          explanation = "Deterministic SQL parameterization applied to prevent SQL injection.";
-        } else if (matchedRule.id === "rule_hardcoded_secret") {
-          explanation = "Hardcoded credential replaced with environment variable loading via os.getenv.";
-        } else if (matchedRule.id === "rule_unsafe_shell") {
-          explanation = "Unsafe shell=True subprocess run replaced with safe list-based execution.";
-        }
-      } else {
-        explanation = "No issues detected. Code is safe.";
-      }
-    } else if (gateDecision === "BLOCK") {
-      const isMismatchScenario = code.trim() === 'query = "SELECT * FROM users WHERE id = " + user_id';
-      if (isMismatchScenario) {
-        explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible.";
-      } else {
-        explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked.";
-      }
-    } else {
-      if (matchedRule) {
-        explanation = "Violation detected, but no deterministic remediation template is available. Human review required.";
-      } else {
-        explanation = "No matching deterministic remediation template available. Code routed to manual security review.";
-      }
-    }
-
-    const simulatedResponse: ScanResponse = {
-      original_code: code,
-      remediated_code: patch1,
-      matched_rule: matchedRule,
-      applied_template_id: templateId,
-      patch_run_1: patch1,
-      patch_run_2: patch2,
-      comparison: {
-        is_match: isMatch,
-        diff: diff,
-        size_diff_bytes: sizeDiff,
-        run_1_hash: p1Hash,
-        run_2_hash: p2Hash
-      },
-      ledger_record: record,
-      gate_decision: gateDecision,
-      explanation: explanation
-    };
-
-    setResponse(simulatedResponse);
-
-    // Save locally
-    const localHistory = localStorage.getItem('replayguard_ledger_history');
-    let history: LedgerRecord[] = localHistory ? JSON.parse(localHistory) : [];
-    history.unshift(record);
-    history = history.slice(0, 50);
-    localStorage.setItem('replayguard_ledger_history', JSON.stringify(history));
-    setLedgerHistory(history);
-  };
 
   return (
     <div className="min-h-screen pb-16">
@@ -388,9 +215,9 @@ export default function App() {
           <div className="flex items-center gap-4">
             {/* Status indicator */}
             <div className="flex items-center gap-2">
-              <span className={`h-2.5 w-2.5 rounded-full ${isBackendOnline ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-amber-500 shadow-amber-500/50'} shadow-lg`}></span>
+              <span className={`h-2.5 w-2.5 rounded-full ${isBackendOnline ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-rose-500 shadow-rose-500/50'} shadow-lg`}></span>
               <span className="text-xs text-slate-400">
-                {isBackendOnline ? 'Backend API Active' : 'Simulation Fallback Mode'}
+                {isBackendOnline ? 'Backend API Active' : 'Backend API Offline (Scanning Unavailable)'}
               </span>
             </div>
           </div>
@@ -489,10 +316,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* Simulator Switches */}
+            {/* Controlled Test Settings */}
             <div className="bg-[#0f1526]/50 border border-slate-800/80 rounded-lg p-4">
               <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                <Binary className="w-4 h-4 text-blue-400" /> Simulation Settings
+                <Binary className="w-4 h-4 text-blue-400" /> Controlled Test Settings
               </h3>
               
               <div className="flex items-start gap-3">
@@ -505,7 +332,7 @@ export default function App() {
                 />
                 <div className="text-xs">
                   <label htmlFor="non-deterministic" className="font-semibold text-slate-200 hover:cursor-pointer">
-                    Simulate Non-Determinism (Replay Mismatch)
+                    Simulate Non-Determinism (Controlled Fault Injection)
                   </label>
                   <p className="text-slate-400 mt-1 leading-relaxed">
                     Injects a randomized identifier comment on Run 2. This forces a byte-level mismatch, which triggers a Merge Gate <strong>BLOCK</strong>.
@@ -542,6 +369,18 @@ export default function App() {
         {/* Right Column: Pipeline Execution & Results */}
         <section className="lg:col-span-7 flex flex-col gap-6">
           
+          {errorMsg && (
+            <div className="glass-panel border border-rose-500/20 bg-rose-950/20 text-rose-200 rounded-xl p-6 shadow-xl flex items-center gap-4">
+              <div className="bg-rose-500/20 p-3 rounded-full">
+                <XCircle className="w-8 h-8 text-rose-500" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-bold text-rose-200">Verification Failure</h3>
+                <p className="text-xs text-rose-300 mt-1 leading-relaxed">{errorMsg}</p>
+              </div>
+            </div>
+          )}
+
           {/* Stepper loader */}
           {loading && (
             <div className="glass-panel rounded-xl p-8 shadow-xl flex flex-col gap-6 animate-pulse">
@@ -589,7 +428,7 @@ export default function App() {
               <div className="max-w-md">
                 <h3 className="text-lg font-semibold text-slate-200">Awaiting Trust Gate Run</h3>
                 <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                  Select a remediation verification scenario on the left, set simulation properties, and run the trust gate. The system will demonstrate deterministic detection, dual independent remediation replays, byte-level comparison, evidence recording, and gate decisioning.
+                  Select a remediation verification scenario on the left, set controlled test properties, and run the trust gate. The system will demonstrate deterministic detection, two deterministic remediation runs, byte-level comparison, evidence recording, and gate decisioning.
                 </p>
               </div>
               
@@ -659,6 +498,72 @@ export default function App() {
                       {response.gate_decision === 'BLOCK' && 'Replay mismatch detected. Change cannot proceed.'}
                       {response.gate_decision === 'REVIEW' && 'No deterministic remediation template available. Human review required.'}
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Compact Authorization Evidence Section */}
+              <div className="glass-panel border border-slate-800 rounded-xl p-5 shadow-md flex flex-col gap-3">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                  <Database className="w-4 h-4 text-blue-400" /> Authorization Evidence
+                </h4>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Reason Code</span>
+                    <span className="font-semibold text-slate-200">{response.ledger_record?.reason_code || 'N/A'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Evidence Persisted</span>
+                    <span className={`font-semibold ${response.ledger_record?.evidence_persisted ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {response.ledger_record?.evidence_persisted ? 'YES' : 'NO'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Record ID</span>
+                    <code className="font-mono text-slate-300 bg-[#080d16] px-1.5 py-0.5 rounded border border-slate-800/80 break-all text-[11px] inline-block">{response.ledger_record?.record_id || 'N/A'}</code>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template ID</span>
+                    <span className="font-semibold text-slate-200">{response.ledger_record?.template_id || 'NONE'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template Version</span>
+                    <span className="font-semibold text-slate-200">{response.ledger_record?.template_version || 'N/A'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template Hash</span>
+                    {response.ledger_record?.template_hash ? (
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-[11px] text-slate-300 bg-[#080d16] px-1.5 py-0.5 rounded border border-slate-800/80 break-all select-all">
+                          {response.ledger_record.template_hash.substring(0, 16)}...
+                        </code>
+                        <button
+                          onClick={() => handleCopy(response.ledger_record.template_hash || '', 'template_hash')}
+                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 active:scale-95 transition-all"
+                          title="Copy Full Template Hash"
+                        >
+                          {copiedText === 'template_hash' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="font-semibold text-slate-200">N/A</span>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template Postconditions</span>
+                    <span className={`font-bold ${
+                      response.ledger_record?.template_postconditions_passed === true
+                        ? 'text-emerald-400'
+                        : response.ledger_record?.template_postconditions_passed === false
+                        ? 'text-rose-400'
+                        : 'text-slate-400'
+                    }`}>
+                      {response.ledger_record?.template_postconditions_passed === true
+                        ? 'PASS'
+                        : response.ledger_record?.template_postconditions_passed === false
+                        ? 'FAILED'
+                        : 'NOT RUN'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -768,105 +673,136 @@ export default function App() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-slate-400 font-semibold uppercase">Applied Template:</span>
-                        <code className="text-xs font-mono text-blue-400 bg-blue-950/20 py-0.5 px-2 rounded border border-blue-500/10">
-                          {response.applied_template_id}
+                        <code className={`text-xs font-mono py-0.5 px-2 rounded border ${
+                          response.applied_template_id
+                            ? 'text-blue-400 bg-blue-950/20 border-blue-500/10'
+                            : 'text-slate-400 bg-slate-900 border-slate-700/30'
+                        }`}>
+                          {response.applied_template_id || 'NONE'}
                         </code>
                       </div>
                       <p className="text-[10px] text-slate-500 mt-1.5">
-                        Selected deterministic substitution schema from local database.
+                        {!response.applied_template_id
+                          ? 'No deterministic template was available; the change was routed to human review.'
+                          : response.template_postconditions_passed
+                          ? 'Selected deterministic template from the configured template registry.'
+                          : 'Template replay attestation failed; the change was blocked.'}
                       </p>
                     </div>
-                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 py-1 px-2 rounded border border-emerald-500/20">
-                      RESOLVED
+                    <span className={`text-[10px] font-bold py-1 px-2 rounded border ${
+                      !response.applied_template_id
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        : response.template_postconditions_passed
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                    }`}>
+                      {!response.applied_template_id
+                        ? 'REVIEW REQUIRED'
+                        : response.template_postconditions_passed
+                        ? 'RESOLVED'
+                        : 'VALIDATION FAILED'}
                     </span>
                   </div>
                 </div>
               )}
 
               {/* Step 3: Replay & Code comparison diff */}
-              {response.patch_run_1 && response.patch_run_2 && (
+              {response.matched_rule && (
                 <div className="glass-panel rounded-xl p-5 shadow-md">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b border-slate-800 pb-2">
                     <Binary className="w-4 h-4 text-blue-400" /> Pipeline Stage 3: Replay Verification & Byte Comparison
                   </h4>
                   
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-xs">
-                    <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 1 Hash</span>
-                      <code className="font-mono text-[10px] text-slate-300 break-all select-all">{response.comparison.run_1_hash}</code>
-                    </div>
-                    <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 2 Hash</span>
-                      <code className={`font-mono text-[10px] break-all select-all ${response.comparison.is_match ? 'text-slate-300' : 'text-rose-400 font-bold'}`}>
-                        {response.comparison.run_2_hash}
-                      </code>
-                    </div>
-                  </div>
+                  {response.applied_template_id && response.patch_run_1 && response.patch_run_2 ? (
+                    <>
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-4 mb-4 text-xs">
+                        <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
+                          <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 1 Hash</span>
+                          <code className="font-mono text-[10px] text-slate-300 break-all select-all">{response.comparison.run_1_hash}</code>
+                        </div>
+                        <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
+                          <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 2 Hash</span>
+                          <code className={`font-mono text-[10px] break-all select-all ${response.comparison.is_match ? 'text-slate-300' : 'text-rose-400 font-bold'}`}>
+                            {response.comparison.run_2_hash}
+                          </code>
+                        </div>
+                      </div>
 
-                  {/* Code Panel Display */}
-                  {response.comparison.is_match ? (
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-emerald-400 font-bold uppercase flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MATCH
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {response.patch_run_1.split('\n').length} lines • {new Blob([response.patch_run_1]).size} bytes
-                        </span>
-                      </div>
-                      <div className="bg-[#06080d] p-4 rounded-lg border border-slate-800 overflow-x-auto">
-                        <pre className="text-[11px] text-slate-300 font-mono leading-relaxed whitespace-pre">
-                          {response.patch_run_1}
-                        </pre>
-                      </div>
-                    </div>
+                      {/* Code Panel Display */}
+                      {response.comparison.is_match ? (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-emerald-400 font-bold uppercase flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MATCH
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {response.patch_run_1.split('\n').length} lines • {new Blob([response.patch_run_1]).size} bytes
+                            </span>
+                          </div>
+                          <div className="bg-[#06080d] p-4 rounded-lg border border-slate-800 overflow-x-auto">
+                            <pre className="text-[11px] text-slate-300 font-mono leading-relaxed whitespace-pre select-all">
+                              {response.patch_run_1}
+                            </pre>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-rose-400 font-bold uppercase flex items-center gap-1">
+                              <XCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MISMATCH
+                            </span>
+                            <span className="text-[10px] text-rose-400 font-mono font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                              Size Diff: {response.comparison.size_diff_bytes > 0 ? `+${response.comparison.size_diff_bytes}` : response.comparison.size_diff_bytes} bytes
+                            </span>
+                          </div>
+
+                          {/* Diff output block */}
+                          <div className="bg-rose-950/20 border border-rose-900/60 rounded-lg overflow-hidden">
+                            <div className="bg-rose-950/35 border-b border-rose-900/60 px-4 py-2 flex justify-between items-center">
+                              <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest font-mono">
+                                Comparison Unified Diff
+                              </span>
+                            </div>
+                            <div className="p-4 bg-[#06080d] overflow-x-auto">
+                              <pre className="text-[11px] font-mono leading-relaxed whitespace-pre text-slate-400">
+                                {response.comparison.diff?.split('\n').map((line, idx) => {
+                                  const isAddition = line.startsWith('+') && !line.startsWith('+++');
+                                  const isDeletion = line.startsWith('-') && !line.startsWith('---');
+                                  const isHeader = line.startsWith('@@') || line.startsWith('---') || line.startsWith('+++');
+
+                                  let color = 'text-slate-400';
+                                  let bg = '';
+                                  if (isAddition) {
+                                    color = 'text-emerald-400';
+                                    bg = 'bg-emerald-950/10';
+                                  } else if (isDeletion) {
+                                    color = 'text-rose-400';
+                                    bg = 'bg-rose-950/10';
+                                  } else if (isHeader) {
+                                    color = 'text-indigo-400 font-bold';
+                                  }
+
+                                  return (
+                                    <div key={idx} className={`${bg} ${color} px-1 rounded-sm`}>
+                                      {line}
+                                    </div>
+                                  );
+                                })}
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-rose-400 font-bold uppercase flex items-center gap-1">
-                          <XCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MISMATCH
-                        </span>
-                        <span className="text-[10px] text-rose-400 font-mono font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                          Size Diff: {response.comparison.size_diff_bytes > 0 ? `+${response.comparison.size_diff_bytes}` : response.comparison.size_diff_bytes} bytes
-                        </span>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-xs text-slate-400">Replay verification was not executed because no deterministic remediation was produced.</span>
                       </div>
-                      
-                      {/* Diff output block */}
-                      <div className="bg-rose-950/20 border border-rose-900/60 rounded-lg overflow-hidden">
-                        <div className="bg-rose-950/35 border-b border-rose-900/60 px-4 py-2 flex justify-between items-center">
-                          <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest font-mono">
-                            Comparison Unified Diff
-                          </span>
-                        </div>
-                        <div className="p-4 bg-[#06080d] overflow-x-auto">
-                          <pre className="text-[11px] font-mono leading-relaxed whitespace-pre text-slate-400">
-                            {response.comparison.diff?.split('\n').map((line, idx) => {
-                              const isAddition = line.startsWith('+') && !line.startsWith('+++');
-                              const isDeletion = line.startsWith('-') && !line.startsWith('---');
-                              const isHeader = line.startsWith('@@') || line.startsWith('---') || line.startsWith('+++');
-                              
-                              let color = 'text-slate-400';
-                              let bg = '';
-                              if (isAddition) {
-                                color = 'text-emerald-400';
-                                bg = 'bg-emerald-950/10';
-                              } else if (isDeletion) {
-                                color = 'text-rose-400';
-                                bg = 'bg-rose-950/10';
-                              } else if (isHeader) {
-                                color = 'text-indigo-400 font-bold';
-                              }
-                              
-                              return (
-                                <div key={idx} className={`${bg} ${color} px-1 rounded-sm`}>
-                                  {line}
-                                </div>
-                              );
-                            })}
-                          </pre>
-                        </div>
-                      </div>
+                      <span className="text-[10px] font-bold bg-slate-800/80 text-slate-400 py-1 px-2 rounded border border-slate-700">
+                        NOT RUN
+                      </span>
                     </div>
                   )}
                 </div>
@@ -882,7 +818,7 @@ export default function App() {
                   {/* Ledger Record Hash Chain */}
                   <div className="flex flex-col gap-2 bg-[#080d16] p-4 rounded-lg border border-slate-800/80">
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                      Immutable Record Receipt Hash
+                      {response.ledger_record.evidence_persisted ? 'PERSISTED EVIDENCE RECEIPT HASH' : 'UNPERSISTED FALLBACK RECORD HASH'}
                     </span>
                     <div className="flex items-center justify-between gap-3">
                       <code className="font-mono text-xs text-blue-400 break-all select-all font-bold">
@@ -940,21 +876,21 @@ export default function App() {
         <div className="glass-panel rounded-xl p-6 shadow-xl">
           <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
             <h3 className="text-md font-semibold flex items-center gap-2 text-slate-200">
-              <History className="w-5 h-5 text-indigo-400" /> Cryptographic Audit Ledger Trail
+              <History className="w-5 h-5 text-indigo-400" /> Local Cryptographic Evidence Ledger
             </h3>
             {ledgerHistory.length > 0 && (
               <button 
                 onClick={clearLedger}
                 className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1.5 py-1 px-3 bg-rose-500/10 hover:bg-rose-500/20 rounded border border-rose-500/10 transition"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Clear Audit Ledger History
+                <Trash2 className="w-3.5 h-3.5" /> Clear Evidence Ledger History
               </button>
             )}
           </div>
 
           {ledgerHistory.length === 0 ? (
             <div className="text-center py-8 text-xs text-slate-400">
-              No audit ledger transactions recorded yet. Run the pipeline to populate the ledger.
+              No evidence ledger transactions recorded yet. Run the pipeline to populate the ledger.
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-slate-800 bg-[#06080d]/60">
@@ -965,7 +901,7 @@ export default function App() {
                     <th className="py-3 px-4">Rule Applied</th>
                     <th className="py-3 px-4">Patch Runs Hashed</th>
                     <th className="py-3 px-4">Gate Decision</th>
-                    <th className="py-3 px-4">Ledger Transaction Hash</th>
+                    <th className="py-3 px-4">Evidence Ledger Hash</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">
