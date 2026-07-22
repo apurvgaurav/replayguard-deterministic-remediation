@@ -4,6 +4,12 @@
 
 A patent-backed prototype for evidence-gated verification of deterministic code remediation. This repository demonstrates selected concepts associated with issued U.S. Patent US 12,670,085 B1. It is an explanatory prototype rather than a production security product.
 
+## Reviewer Preview
+
+![ReplayGuard ALLOW decision showing an active backend, trust-gate context, and reviewer-facing authorization evidence](assets/screenshots/final/08-hardened-authorization-evidence-allow.png)
+
+*ALLOW scenario showing the active backend, trust-gate decision, and reviewer-facing authorization evidence. BLOCK and REVIEW are available as separate built-in scenarios.*
+
 ## Technical Thesis
 
 A proposed remediation remains untrusted until both runs generate patches from consistent template identity, version, and canonical hash; both satisfy the configured postconditions; their normalized UTF-8 outputs match byte-for-byte; and the evidence record is successfully persisted and verified by strict readback.
