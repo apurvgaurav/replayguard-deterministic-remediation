@@ -1,5 +1,6 @@
 import re
 import json
+import hashlib
 from pathlib import Path
 from typing import Optional, Dict, Any
 
@@ -16,20 +17,30 @@ class TemplateEngine:
         except Exception as e:
             print(f"Error loading templates.json: {e}")
             self.templates = []
+    def get_template_for_rule(self, rule_id: str) -> Optional[Dict[str, Any]]:
+        for t in self.templates:
+            if t.get("rule_id") == rule_id:
+                return t
+        return None
 
-    def apply_remediation(self, rule_id: str, code: str) -> Optional[str]:
+    def compute_template_hash(self, template: Dict[str, Any]) -> str:
+        canonical_json = json.dumps(template, sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
+
+    def apply_remediation(self, rule_id: str, code: str, status: Optional[Dict[str, Any]] = None) -> Optional[str]:
         """
         Applies a deterministic template replacement to patch the code.
         Prepend imports if they are not already in the file.
         """
-        template = None
-        for t in self.templates:
-            if t.get("rule_id") == rule_id:
-                template = t
-                break
-        
+        template = self.get_template_for_rule(rule_id)
         if not template:
             return None
+
+        if status is not None:
+            status["template_id"] = template.get("id")
+            status["template_version"] = template.get("version")
+            status["template_hash"] = self.compute_template_hash(template)
+            status["template_postconditions_passed"] = False  # Default to False if we fail early
 
         try:
             search_pattern = template.get("search_pattern", "")
@@ -72,7 +83,12 @@ class TemplateEngine:
                 if re.search(forb, patched_code, flags=re.MULTILINE):
                     return None
 
+            if status is not None:
+                status["template_postconditions_passed"] = True
+
             return patched_code
         except Exception:
             # Catch malformed template regex/configuration errors and fail closed
+            if status is not None:
+                status["template_postconditions_passed"] = False
             return None

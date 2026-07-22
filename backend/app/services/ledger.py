@@ -68,6 +68,27 @@ class LedgerService:
         except Exception:
             return []
 
+    def _compute_record_hash(self, record: Dict[str, Any]) -> str:
+        record_id = record.get("record_id")
+        timestamp = record.get("timestamp")
+        orig_hash = record.get("original_code_hash")
+        rule_id = record.get("rule_id")
+        template_id = record.get("template_id")
+        p1_hash = record.get("patch_run_1_hash") or ""
+        p2_hash = record.get("patch_run_2_hash") or ""
+        gate_decision = record.get("gate_decision")
+        reason_code = record.get("reason_code")
+        template_version = record.get("template_version")
+        template_hash = record.get("template_hash")
+        template_postconditions_passed = record.get("template_postconditions_passed")
+
+        postcond_str = ""
+        if template_postconditions_passed is not None:
+            postcond_str = str(template_postconditions_passed).lower()
+
+        payload = f"{record_id}|{timestamp}|{orig_hash}|{rule_id or ''}|{template_id or ''}|{p1_hash}|{p2_hash}|{gate_decision}|{reason_code or ''}|{template_version or ''}|{template_hash or ''}|{postcond_str}"
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
     def generate_record(
         self,
         original_code: str,
@@ -75,7 +96,11 @@ class LedgerService:
         template_id: Optional[str],
         patch_1: Optional[str],
         patch_2: Optional[str],
-        gate_decision: str
+        gate_decision: str,
+        reason_code: Optional[str] = None,
+        template_version: Optional[str] = None,
+        template_hash: Optional[str] = None,
+        template_postconditions_passed: Optional[bool] = None
     ) -> Dict[str, Any]:
         """
         Generates a cryptographic ledger record of the pipeline run.
@@ -87,11 +112,7 @@ class LedgerService:
         record_id = str(uuid.uuid4())
         timestamp = datetime.now(timezone.utc).isoformat()
 
-        # Include record_id and timestamp in the ledger_hash payload
-        payload = f"{record_id}|{timestamp}|{orig_hash}|{rule_id or ''}|{template_id or ''}|{p1_hash}|{p2_hash}|{gate_decision}"
-        ledger_hash = hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
-        return {
+        record = {
             "record_id": record_id,
             "timestamp": timestamp,
             "original_code_hash": orig_hash,
@@ -100,9 +121,14 @@ class LedgerService:
             "patch_run_1_hash": p1_hash if patch_1 else None,
             "patch_run_2_hash": p2_hash if patch_2 else None,
             "gate_decision": gate_decision,
-            "ledger_hash": ledger_hash,
-            "evidence_persisted": False
+            "evidence_persisted": False,
+            "reason_code": reason_code,
+            "template_version": template_version,
+            "template_hash": template_hash,
+            "template_postconditions_passed": template_postconditions_passed
         }
+        record["ledger_hash"] = self._compute_record_hash(record)
+        return record
 
     def save_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -145,6 +171,13 @@ class LedgerService:
                 expected_hash = persisted_record["ledger_hash"]
                 expected_timestamp = persisted_record["timestamp"]
 
+                # 1. Recompute ledger hash from persisted fields of newest_record
+                recomputed_hash = self._compute_record_hash(newest_record)
+
+                # 2. Compare recomputed hash with newest_record["ledger_hash"] and expected_hash
+                if recomputed_hash != newest_record.get("ledger_hash"):
+                    raise LedgerPersistenceError("Verification failed: recomputed ledger hash does not match stored ledger hash.")
+
                 if (newest_record.get("record_id") != expected_id or
                     newest_record.get("ledger_hash") != expected_hash or
                     newest_record.get("timestamp") != expected_timestamp or
@@ -164,7 +197,11 @@ class LedgerService:
         template_id: Optional[str],
         patch_1: Optional[str],
         patch_2: Optional[str],
-        gate_decision: str
+        gate_decision: str,
+        reason_code: Optional[str] = None,
+        template_version: Optional[str] = None,
+        template_hash: Optional[str] = None,
+        template_postconditions_passed: Optional[bool] = None
     ) -> Dict[str, Any]:
         """
         Generates and saves a cryptographic ledger record of the pipeline run.
@@ -175,6 +212,10 @@ class LedgerService:
             template_id=template_id,
             patch_1=patch_1,
             patch_2=patch_2,
-            gate_decision=gate_decision
+            gate_decision=gate_decision,
+            reason_code=reason_code,
+            template_version=template_version,
+            template_hash=template_hash,
+            template_postconditions_passed=template_postconditions_passed
         )
         return self.save_record(record)

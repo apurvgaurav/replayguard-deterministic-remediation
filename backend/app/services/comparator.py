@@ -35,14 +35,15 @@ class ByteComparator:
         diff_text = None
         if not is_match:
             # Generate diff using unified_diff
-            lines_1 = patch_1.splitlines(keepends=True)
-            lines_2 = patch_2.splitlines(keepends=True)
+            lines_1 = patch_1.splitlines()
+            lines_2 = patch_2.splitlines()
             diff_gen = difflib.unified_diff(
                 lines_1, lines_2,
                 fromfile='patch_run_1.py',
-                tofile='patch_run_2.py'
+                tofile='patch_run_2.py',
+                lineterm=""
             )
-            diff_text = "".join(diff_gen)
+            diff_text = "\n".join(diff_gen)
 
         return {
             "is_match": is_match,

@@ -55,25 +55,35 @@ def scan_code(req: ScanRequest):
     size_diff = 0
     run_1_hash = ""
     run_2_hash = ""
-    
+
+    template_version = None
+    template_hash = None
+    template_postconditions_passed = None
+
     if matched_rule_dict:
         matched_rule = RuleMatch(**matched_rule_dict)
         rule_id = matched_rule.id
-        rule_id = matched_rule.id
-        
-        # 2. Run independent patch generation replays
+
+        template_status = {}
+        # 2. Run two deterministic remediation passes
         patch_run_1, patch_run_2 = replay_controller.run_replays(
             rule_id=rule_id,
             code=code_input,
-            simulate_non_determinism=req.simulate_non_determinism
+            simulate_non_determinism=req.simulate_non_determinism,
+            status=template_status
         )
-        
+
+        template_version = template_status.get("template_version")
+        template_hash = template_status.get("template_hash")
+        template_postconditions_passed = template_status.get("template_postconditions_passed")
+
         # Check if template was actually applied
-        if patch_run_1 is not None:
-            applied_template_id = f"template_{rule_id.split('rule_')[-1]}"
+        template = replay_controller.template_engine.get_template_for_rule(rule_id)
+        if patch_run_1 is not None and template:
+            applied_template_id = template.get("id")
         else:
             applied_template_id = None
-        
+
         # 3. Perform byte-level comparison
         comp_res = comparator.compare(patch_run_1, patch_run_2)
         is_match = comp_res["is_match"]
@@ -91,20 +101,27 @@ def scan_code(req: ScanRequest):
         size_diff = 0
 
     # 4. Determine candidate status and tentative decision
-    is_allow_candidate = (matched_rule is not None and applied_template_id is not None and is_match)
-
-    if is_allow_candidate:
-        tentative_decision = "ALLOW"
-        tentative_reason = "EVIDENCE_VERIFIED"
+    if matched_rule is not None and applied_template_id is not None:
+        if template_postconditions_passed is not True:
+            tentative_decision = "BLOCK"
+            tentative_reason = "TEMPLATE_ATTESTATION_FAILED"
+            is_allow_candidate = False
+        elif not is_match:
+            tentative_decision = "BLOCK"
+            tentative_reason = "REPLAY_MISMATCH"
+            is_allow_candidate = False
+        else:
+            tentative_decision = "ALLOW"
+            tentative_reason = "EVIDENCE_VERIFIED"
+            is_allow_candidate = True
     elif matched_rule is None:
         tentative_decision = "REVIEW"
         tentative_reason = "NO_RULE_MATCH"
-    elif applied_template_id is None:
+        is_allow_candidate = False
+    else:  # applied_template_id is None
         tentative_decision = "REVIEW"
         tentative_reason = "NO_TEMPLATE"
-    else:
-        tentative_decision = "BLOCK"
-        tentative_reason = "REPLAY_MISMATCH"
+        is_allow_candidate = False
 
     evidence_persisted = False
     ledger_rec_dict = None
@@ -117,7 +134,11 @@ def scan_code(req: ScanRequest):
             template_id=applied_template_id,
             patch_1=patch_run_1,
             patch_2=patch_run_2,
-            gate_decision=tentative_decision
+            gate_decision=tentative_decision,
+            reason_code=tentative_reason,
+            template_version=template_version,
+            template_hash=template_hash,
+            template_postconditions_passed=template_postconditions_passed
         )
         evidence_persisted = ledger_rec_dict.get("evidence_persisted", False)
     except LedgerPersistenceError:
@@ -128,7 +149,8 @@ def scan_code(req: ScanRequest):
         rule_matched=matched_rule is not None,
         template_applied=applied_template_id is not None,
         is_replay_match=is_match,
-        evidence_persisted=evidence_persisted
+        evidence_persisted=evidence_persisted,
+        template_postconditions_passed=template_postconditions_passed is True
     )
 
     # Determine final reason code
@@ -149,11 +171,15 @@ def scan_code(req: ScanRequest):
             template_id=applied_template_id,
             patch_1=patch_run_1,
             patch_2=patch_run_2,
-            gate_decision=gate_decision
+            gate_decision=gate_decision,
+            reason_code=reason_code,
+            template_version=template_version,
+            template_hash=template_hash,
+            template_postconditions_passed=template_postconditions_passed
         )
 
     ledger_record = LedgerRecord(**ledger_rec_dict)
-    
+
     comparison = ComparisonResult(
         is_match=is_match,
         diff=diff_text,
@@ -161,7 +187,7 @@ def scan_code(req: ScanRequest):
         run_1_hash=run_1_hash,
         run_2_hash=run_2_hash
     )
-    
+
     # Generate contextual explanation
     remediated_code = patch_run_1
     explanation = None
@@ -182,6 +208,8 @@ def scan_code(req: ScanRequest):
             explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible."
         elif reason_code == "EVIDENCE_PERSISTENCE_FAILED":
             explanation = "Safety Violation: Ledger persistence failed. Merging blocked."
+        elif reason_code == "TEMPLATE_ATTESTATION_FAILED":
+            explanation = "Safety Violation: Template replay attestation failed. Merging blocked."
         else:
             explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked."
     elif gate_decision == "REVIEW":
@@ -201,7 +229,10 @@ def scan_code(req: ScanRequest):
         ledger_record=ledger_record,
         gate_decision=gate_decision,
         explanation=explanation,
-        reason_code=reason_code
+        reason_code=reason_code,
+        template_version=template_version,
+        template_hash=template_hash,
+        template_postconditions_passed=template_postconditions_passed
     )
 
 @app.get("/api/ledger", response_model=List[LedgerRecord])

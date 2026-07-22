@@ -49,6 +49,10 @@ interface LedgerRecord {
   ledger_hash: string;
   evidence_persisted?: boolean;
   record_id?: string | null;
+  reason_code?: string | null;
+  template_version?: string | null;
+  template_hash?: string | null;
+  template_postconditions_passed?: boolean | null;
 }
 
 interface ScanResponse {
@@ -62,7 +66,10 @@ interface ScanResponse {
   ledger_record: LedgerRecord;
   gate_decision: string;
   explanation: string | null;
-  reason_code: string;
+  reason_code: string | null;
+  template_version?: string | null;
+  template_hash?: string | null;
+  template_postconditions_passed?: boolean | null;
 }
 
 
@@ -309,10 +316,10 @@ export default function App() {
               </div>
             </div>
 
-            {/* Simulator Switches */}
+            {/* Controlled Test Settings */}
             <div className="bg-[#0f1526]/50 border border-slate-800/80 rounded-lg p-4">
               <h3 className="text-xs font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                <Binary className="w-4 h-4 text-blue-400" /> Simulation Settings
+                <Binary className="w-4 h-4 text-blue-400" /> Controlled Test Settings
               </h3>
               
               <div className="flex items-start gap-3">
@@ -421,7 +428,7 @@ export default function App() {
               <div className="max-w-md">
                 <h3 className="text-lg font-semibold text-slate-200">Awaiting Trust Gate Run</h3>
                 <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                  Select a remediation verification scenario on the left, set simulation properties, and run the trust gate. The system will demonstrate deterministic detection, dual independent remediation replays, byte-level comparison, evidence recording, and gate decisioning.
+                  Select a remediation verification scenario on the left, set controlled test properties, and run the trust gate. The system will demonstrate deterministic detection, two deterministic remediation runs, byte-level comparison, evidence recording, and gate decisioning.
                 </p>
               </div>
               
@@ -491,6 +498,72 @@ export default function App() {
                       {response.gate_decision === 'BLOCK' && 'Replay mismatch detected. Change cannot proceed.'}
                       {response.gate_decision === 'REVIEW' && 'No deterministic remediation template available. Human review required.'}
                     </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Compact Authorization Evidence Section */}
+              <div className="glass-panel border border-slate-800 rounded-xl p-5 shadow-md flex flex-col gap-3">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                  <Database className="w-4 h-4 text-blue-400" /> Authorization Evidence
+                </h4>
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Reason Code</span>
+                    <span className="font-semibold text-slate-200">{response.ledger_record?.reason_code || 'N/A'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Evidence Persisted</span>
+                    <span className={`font-semibold ${response.ledger_record?.evidence_persisted ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {response.ledger_record?.evidence_persisted ? 'YES' : 'NO'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Record ID</span>
+                    <code className="font-mono text-slate-300 bg-[#080d16] px-1.5 py-0.5 rounded border border-slate-800/80 break-all text-[11px] inline-block">{response.ledger_record?.record_id || 'N/A'}</code>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template ID</span>
+                    <span className="font-semibold text-slate-200">{response.ledger_record?.template_id || 'NONE'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template Version</span>
+                    <span className="font-semibold text-slate-200">{response.ledger_record?.template_version || 'N/A'}</span>
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template Hash</span>
+                    {response.ledger_record?.template_hash ? (
+                      <div className="flex items-center gap-2">
+                        <code className="font-mono text-[11px] text-slate-300 bg-[#080d16] px-1.5 py-0.5 rounded border border-slate-800/80 break-all select-all">
+                          {response.ledger_record.template_hash.substring(0, 16)}...
+                        </code>
+                        <button
+                          onClick={() => handleCopy(response.ledger_record.template_hash || '', 'template_hash')}
+                          className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 active:scale-95 transition-all"
+                          title="Copy Full Template Hash"
+                        >
+                          {copiedText === 'template_hash' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="font-semibold text-slate-200">N/A</span>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <span className="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Template Postconditions</span>
+                    <span className={`font-bold ${
+                      response.ledger_record?.template_postconditions_passed === true
+                        ? 'text-emerald-400'
+                        : response.ledger_record?.template_postconditions_passed === false
+                        ? 'text-rose-400'
+                        : 'text-slate-400'
+                    }`}>
+                      {response.ledger_record?.template_postconditions_passed === true
+                        ? 'PASS'
+                        : response.ledger_record?.template_postconditions_passed === false
+                        ? 'FAILED'
+                        : 'NOT RUN'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -600,105 +673,136 @@ export default function App() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-slate-400 font-semibold uppercase">Applied Template:</span>
-                        <code className="text-xs font-mono text-blue-400 bg-blue-950/20 py-0.5 px-2 rounded border border-blue-500/10">
-                          {response.applied_template_id}
+                        <code className={`text-xs font-mono py-0.5 px-2 rounded border ${
+                          response.applied_template_id
+                            ? 'text-blue-400 bg-blue-950/20 border-blue-500/10'
+                            : 'text-slate-400 bg-slate-900 border-slate-700/30'
+                        }`}>
+                          {response.applied_template_id || 'NONE'}
                         </code>
                       </div>
                       <p className="text-[10px] text-slate-500 mt-1.5">
-                        Selected deterministic substitution schema from local database.
+                        {!response.applied_template_id
+                          ? 'No deterministic template was available; the change was routed to human review.'
+                          : response.template_postconditions_passed
+                          ? 'Selected deterministic template from the configured template registry.'
+                          : 'Template replay attestation failed; the change was blocked.'}
                       </p>
                     </div>
-                    <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 py-1 px-2 rounded border border-emerald-500/20">
-                      RESOLVED
+                    <span className={`text-[10px] font-bold py-1 px-2 rounded border ${
+                      !response.applied_template_id
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        : response.template_postconditions_passed
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                    }`}>
+                      {!response.applied_template_id
+                        ? 'REVIEW REQUIRED'
+                        : response.template_postconditions_passed
+                        ? 'RESOLVED'
+                        : 'VALIDATION FAILED'}
                     </span>
                   </div>
                 </div>
               )}
 
               {/* Step 3: Replay & Code comparison diff */}
-              {response.patch_run_1 && response.patch_run_2 && (
+              {response.matched_rule && (
                 <div className="glass-panel rounded-xl p-5 shadow-md">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b border-slate-800 pb-2">
                     <Binary className="w-4 h-4 text-blue-400" /> Pipeline Stage 3: Replay Verification & Byte Comparison
                   </h4>
                   
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-xs">
-                    <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 1 Hash</span>
-                      <code className="font-mono text-[10px] text-slate-300 break-all select-all">{response.comparison.run_1_hash}</code>
-                    </div>
-                    <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
-                      <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 2 Hash</span>
-                      <code className={`font-mono text-[10px] break-all select-all ${response.comparison.is_match ? 'text-slate-300' : 'text-rose-400 font-bold'}`}>
-                        {response.comparison.run_2_hash}
-                      </code>
-                    </div>
-                  </div>
+                  {response.applied_template_id && response.patch_run_1 && response.patch_run_2 ? (
+                    <>
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-4 mb-4 text-xs">
+                        <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
+                          <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 1 Hash</span>
+                          <code className="font-mono text-[10px] text-slate-300 break-all select-all">{response.comparison.run_1_hash}</code>
+                        </div>
+                        <div className="bg-[#080d16] p-3 rounded-lg border border-slate-800/80">
+                          <span className="text-slate-500 block text-[10px] uppercase font-bold tracking-wider">Patch Run 2 Hash</span>
+                          <code className={`font-mono text-[10px] break-all select-all ${response.comparison.is_match ? 'text-slate-300' : 'text-rose-400 font-bold'}`}>
+                            {response.comparison.run_2_hash}
+                          </code>
+                        </div>
+                      </div>
 
-                  {/* Code Panel Display */}
-                  {response.comparison.is_match ? (
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-emerald-400 font-bold uppercase flex items-center gap-1">
-                          <CheckCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MATCH
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          {response.patch_run_1.split('\n').length} lines • {new Blob([response.patch_run_1]).size} bytes
-                        </span>
-                      </div>
-                      <div className="bg-[#06080d] p-4 rounded-lg border border-slate-800 overflow-x-auto">
-                        <pre className="text-[11px] text-slate-300 font-mono leading-relaxed whitespace-pre">
-                          {response.patch_run_1}
-                        </pre>
-                      </div>
-                    </div>
+                      {/* Code Panel Display */}
+                      {response.comparison.is_match ? (
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-emerald-400 font-bold uppercase flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MATCH
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {response.patch_run_1.split('\n').length} lines • {new Blob([response.patch_run_1]).size} bytes
+                            </span>
+                          </div>
+                          <div className="bg-[#06080d] p-4 rounded-lg border border-slate-800 overflow-x-auto">
+                            <pre className="text-[11px] text-slate-300 font-mono leading-relaxed whitespace-pre select-all">
+                              {response.patch_run_1}
+                            </pre>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-rose-400 font-bold uppercase flex items-center gap-1">
+                              <XCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MISMATCH
+                            </span>
+                            <span className="text-[10px] text-rose-400 font-mono font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                              Size Diff: {response.comparison.size_diff_bytes > 0 ? `+${response.comparison.size_diff_bytes}` : response.comparison.size_diff_bytes} bytes
+                            </span>
+                          </div>
+
+                          {/* Diff output block */}
+                          <div className="bg-rose-950/20 border border-rose-900/60 rounded-lg overflow-hidden">
+                            <div className="bg-rose-950/35 border-b border-rose-900/60 px-4 py-2 flex justify-between items-center">
+                              <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest font-mono">
+                                Comparison Unified Diff
+                              </span>
+                            </div>
+                            <div className="p-4 bg-[#06080d] overflow-x-auto">
+                              <pre className="text-[11px] font-mono leading-relaxed whitespace-pre text-slate-400">
+                                {response.comparison.diff?.split('\n').map((line, idx) => {
+                                  const isAddition = line.startsWith('+') && !line.startsWith('+++');
+                                  const isDeletion = line.startsWith('-') && !line.startsWith('---');
+                                  const isHeader = line.startsWith('@@') || line.startsWith('---') || line.startsWith('+++');
+
+                                  let color = 'text-slate-400';
+                                  let bg = '';
+                                  if (isAddition) {
+                                    color = 'text-emerald-400';
+                                    bg = 'bg-emerald-950/10';
+                                  } else if (isDeletion) {
+                                    color = 'text-rose-400';
+                                    bg = 'bg-rose-950/10';
+                                  } else if (isHeader) {
+                                    color = 'text-indigo-400 font-bold';
+                                  }
+
+                                  return (
+                                    <div key={idx} className={`${bg} ${color} px-1 rounded-sm`}>
+                                      {line}
+                                    </div>
+                                  );
+                                })}
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   ) : (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-rose-400 font-bold uppercase flex items-center gap-1">
-                          <XCircle className="w-3.5 h-3.5" /> Byte-Level Comparison: MISMATCH
-                        </span>
-                        <span className="text-[10px] text-rose-400 font-mono font-bold bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                          Size Diff: {response.comparison.size_diff_bytes > 0 ? `+${response.comparison.size_diff_bytes}` : response.comparison.size_diff_bytes} bytes
-                        </span>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-xs text-slate-400">Replay verification was not executed because no deterministic remediation was produced.</span>
                       </div>
-                      
-                      {/* Diff output block */}
-                      <div className="bg-rose-950/20 border border-rose-900/60 rounded-lg overflow-hidden">
-                        <div className="bg-rose-950/35 border-b border-rose-900/60 px-4 py-2 flex justify-between items-center">
-                          <span className="text-[10px] font-bold text-rose-300 uppercase tracking-widest font-mono">
-                            Comparison Unified Diff
-                          </span>
-                        </div>
-                        <div className="p-4 bg-[#06080d] overflow-x-auto">
-                          <pre className="text-[11px] font-mono leading-relaxed whitespace-pre text-slate-400">
-                            {response.comparison.diff?.split('\n').map((line, idx) => {
-                              const isAddition = line.startsWith('+') && !line.startsWith('+++');
-                              const isDeletion = line.startsWith('-') && !line.startsWith('---');
-                              const isHeader = line.startsWith('@@') || line.startsWith('---') || line.startsWith('+++');
-                              
-                              let color = 'text-slate-400';
-                              let bg = '';
-                              if (isAddition) {
-                                color = 'text-emerald-400';
-                                bg = 'bg-emerald-950/10';
-                              } else if (isDeletion) {
-                                color = 'text-rose-400';
-                                bg = 'bg-rose-950/10';
-                              } else if (isHeader) {
-                                color = 'text-indigo-400 font-bold';
-                              }
-                              
-                              return (
-                                <div key={idx} className={`${bg} ${color} px-1 rounded-sm`}>
-                                  {line}
-                                </div>
-                              );
-                            })}
-                          </pre>
-                        </div>
-                      </div>
+                      <span className="text-[10px] font-bold bg-slate-800/80 text-slate-400 py-1 px-2 rounded border border-slate-700">
+                        NOT RUN
+                      </span>
                     </div>
                   )}
                 </div>
@@ -714,7 +818,7 @@ export default function App() {
                   {/* Ledger Record Hash Chain */}
                   <div className="flex flex-col gap-2 bg-[#080d16] p-4 rounded-lg border border-slate-800/80">
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                      Immutable Record Receipt Hash
+                      {response.ledger_record.evidence_persisted ? 'PERSISTED EVIDENCE RECEIPT HASH' : 'UNPERSISTED FALLBACK RECORD HASH'}
                     </span>
                     <div className="flex items-center justify-between gap-3">
                       <code className="font-mono text-xs text-blue-400 break-all select-all font-bold">
@@ -772,21 +876,21 @@ export default function App() {
         <div className="glass-panel rounded-xl p-6 shadow-xl">
           <div className="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
             <h3 className="text-md font-semibold flex items-center gap-2 text-slate-200">
-              <History className="w-5 h-5 text-indigo-400" /> Cryptographic Audit Ledger Trail
+              <History className="w-5 h-5 text-indigo-400" /> Local Cryptographic Evidence Ledger
             </h3>
             {ledgerHistory.length > 0 && (
               <button 
                 onClick={clearLedger}
                 className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1.5 py-1 px-3 bg-rose-500/10 hover:bg-rose-500/20 rounded border border-rose-500/10 transition"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Clear Audit Ledger History
+                <Trash2 className="w-3.5 h-3.5" /> Clear Evidence Ledger History
               </button>
             )}
           </div>
 
           {ledgerHistory.length === 0 ? (
             <div className="text-center py-8 text-xs text-slate-400">
-              No audit ledger transactions recorded yet. Run the pipeline to populate the ledger.
+              No evidence ledger transactions recorded yet. Run the pipeline to populate the ledger.
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-slate-800 bg-[#06080d]/60">
@@ -797,7 +901,7 @@ export default function App() {
                     <th className="py-3 px-4">Rule Applied</th>
                     <th className="py-3 px-4">Patch Runs Hashed</th>
                     <th className="py-3 px-4">Gate Decision</th>
-                    <th className="py-3 px-4">Ledger Transaction Hash</th>
+                    <th className="py-3 px-4">Evidence Ledger Hash</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">

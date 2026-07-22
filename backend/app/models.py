@@ -39,6 +39,10 @@ class LedgerRecord(BaseModel):
     ledger_hash: str
     evidence_persisted: bool = False
     record_id: Optional[str] = None
+    reason_code: Optional[str] = None
+    template_version: Optional[str] = None
+    template_hash: Optional[str] = None
+    template_postconditions_passed: Optional[bool] = None
 
 class ScanResponse(BaseModel):
     original_code: str
@@ -52,3 +56,6 @@ class ScanResponse(BaseModel):
     gate_decision: str  # ALLOW, BLOCK, REVIEW
     explanation: Optional[str] = None
     reason_code: str
+    template_version: Optional[str] = None
+    template_hash: Optional[str] = None
+    template_postconditions_passed: Optional[bool] = None

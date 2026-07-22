@@ -23,7 +23,7 @@ def test_sql_injection_mismatch():
     assert data["patch_run_1"] != data["patch_run_2"]
     assert data["comparison"]["is_match"] is False
     assert data["comparison"]["diff"] is not None
-    assert "ReplayGuard Non-Deterministic Seed" in data["patch_run_2"]
+    assert "ReplayGuard Controlled Fault Injection" in data["patch_run_2"]
     assert data["comparison"]["run_1_hash"] != data["comparison"]["run_2_hash"]
     assert data["ledger_record"]["gate_decision"] == "BLOCK"
 
