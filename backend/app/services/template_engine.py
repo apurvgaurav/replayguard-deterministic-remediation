@@ -31,21 +31,48 @@ class TemplateEngine:
         if not template:
             return None
 
-        search_pattern = template.get("search_pattern", "")
-        replace_pattern = template.get("replace_pattern", "")
-        additional_imports = template.get("additional_imports", [])
+        try:
+            search_pattern = template.get("search_pattern", "")
+            replace_pattern = template.get("replace_pattern", "")
+            expected_primary_count = template.get("expected_match_count", 1)
+            additional_imports = template.get("additional_imports", [])
 
-        # Perform replacement with MULTILINE flag to support ^ matching line start
-        patched_code = re.sub(search_pattern, replace_pattern, code, flags=re.MULTILINE)
+            # 1. Primary replacement using re.subn
+            patched_code, primary_count = re.subn(search_pattern, replace_pattern, code, flags=re.MULTILINE)
+            if primary_count != expected_primary_count:
+                return None
 
-        if patched_code == code:
-            # If search pattern failed to match exactly, fall back to a simpler search-and-replace
-            # or return the code as-is for the comparator to handle.
-            pass
+            # 2. Process follow-up replacements if specified
+            follow_ups = template.get("follow_up_replacements", [])
+            for f in follow_ups:
+                f_search = f.get("search_pattern", "")
+                f_replace = f.get("replace_pattern", "")
+                f_expected = f.get("expected_match_count", 1)
+                patched_code, f_count = re.subn(f_search, f_replace, patched_code, flags=re.MULTILINE)
+                if f_count != f_expected:
+                    return None
 
-        # Add imports if necessary
-        for imp in additional_imports:
-            if imp not in patched_code:
-                patched_code = f"{imp}\n" + patched_code
+            # If replacement output is unchanged, fail closed
+            if patched_code == code:
+                return None
 
-        return patched_code
+            # 3. Add imports if necessary
+            for imp in additional_imports:
+                if imp not in patched_code:
+                    patched_code = f"{imp}\n" + patched_code
+
+            # 4. Postcondition validation
+            required_post = template.get("required_postconditions", [])
+            for req in required_post:
+                if not re.search(req, patched_code, flags=re.MULTILINE):
+                    return None
+
+            forbidden_post = template.get("forbidden_postconditions", [])
+            for forb in forbidden_post:
+                if re.search(forb, patched_code, flags=re.MULTILINE):
+                    return None
+
+            return patched_code
+        except Exception:
+            # Catch malformed template regex/configuration errors and fail closed
+            return None

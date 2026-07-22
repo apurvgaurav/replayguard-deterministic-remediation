@@ -29,8 +29,7 @@ class ReplayController:
         patch_2 = self.template_engine.apply_remediation(rule_id, normalized_input)
         if patch_2:
             patch_2 = normalize_code(patch_2)
-            is_mismatch_scenario = (normalized_input.strip() == 'query = "SELECT * FROM users WHERE id = " + user_id')
-            if simulate_non_determinism or is_mismatch_scenario:
+            if simulate_non_determinism:
                 # Inject a dynamic/random identifier as a comment to simulate LLM/non-deterministic noise
                 random_token = uuid.uuid4().hex[:8]
                 patch_2 += f"\n\n# ReplayGuard Non-Deterministic Seed: {random_token}"

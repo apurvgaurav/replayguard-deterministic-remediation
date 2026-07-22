@@ -7,6 +7,7 @@ class Scenario(BaseModel):
     description: str
     language: str
     code: str
+    simulate_non_determinism: bool = False
 
 class ScanRequest(BaseModel):
     code: str

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Shield, 
   Play, 
@@ -16,8 +16,7 @@ import {
   Copy, 
   Check, 
   Trash2, 
-  Binary, 
-  HelpCircle 
+  Binary
 } from 'lucide-react';
 import { fallbackScenarios, Scenario } from './data/scenarios';
 
@@ -48,10 +47,13 @@ interface LedgerRecord {
   patch_run_2_hash: string | null;
   gate_decision: string;
   ledger_hash: string;
+  evidence_persisted?: boolean;
+  record_id?: string | null;
 }
 
 interface ScanResponse {
   original_code: string;
+  remediated_code: string | null;
   matched_rule: RuleMatch | null;
   applied_template_id: string | null;
   patch_run_1: string | null;
@@ -59,26 +61,18 @@ interface ScanResponse {
   comparison: ComparisonResult;
   ledger_record: LedgerRecord;
   gate_decision: string;
+  explanation: string | null;
+  reason_code: string;
 }
 
-// Quick helper to generate a realistic mock SHA-256 hash for local simulation
-const generateMockHash = (str: string): string => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  const hex = Math.abs(hash).toString(16).padStart(8, '0');
-  // Extend it to look like a full 64-char SHA-256
-  return (hex + '8f7a9c3e5d1b4a6c2e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d').substring(0, 64);
-};
+
 
 export default function App() {
   const [scenarios, setScenarios] = useState<Scenario[]>(fallbackScenarios);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string>(fallbackScenarios[0].id);
   const [code, setCode] = useState<string>(fallbackScenarios[0].code);
   const [simulateNonDeterminism, setSimulateNonDeterminism] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const [loading, setLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -86,10 +80,11 @@ export default function App() {
   const [ledgerHistory, setLedgerHistory] = useState<LedgerRecord[]>([]);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isBackendOnline, setIsBackendOnline] = useState<boolean | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
 
   // Fetch scenarios and initial check
   useEffect(() => {
+    localStorage.removeItem('replayguard_ledger_history');
     const initFetch = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/scenarios`);
@@ -115,6 +110,7 @@ export default function App() {
     const scen = scenarios.find(s => s.id === id);
     if (scen) {
       setCode(scen.code);
+      setSimulateNonDeterminism(!!scen.simulate_non_determinism);
     }
   };
 
@@ -124,13 +120,11 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         setLedgerHistory(data);
+      } else {
+        setLedgerHistory([]);
       }
     } catch (err) {
-      // If backend is offline, load from local storage
-      const local = localStorage.getItem('replayguard_ledger_history');
-      if (local) {
-        setLedgerHistory(JSON.parse(local));
-      }
+      setLedgerHistory([]);
     }
   };
 
@@ -140,7 +134,6 @@ export default function App() {
       setLedgerHistory([]);
     } catch (err) {
       setLedgerHistory([]);
-      localStorage.removeItem('replayguard_ledger_history');
     }
   };
 
@@ -154,216 +147,43 @@ export default function App() {
     setLoading(true);
     setErrorMsg(null);
     setResponse(null);
-    
-    // Animate through pipeline steps for visual engagement
     setActiveStep(1); // Scanning
     await new Promise(r => setTimeout(r, 600));
     setActiveStep(2); // Normalizing
     await new Promise(r => setTimeout(r, 600));
-    setActiveStep(3); // Replaying
-    await new Promise(r => setTimeout(r, 800));
-    setActiveStep(4); // Comparing & Ledgering
-    await new Promise(r => setTimeout(r, 600));
 
-    if (isBackendOnline) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/scan`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            code,
-            language: 'python',
-            simulate_non_determinism: simulateNonDeterminism
-          })
-        });
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/scan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language: 'python',
+          simulate_non_determinism: simulateNonDeterminism
+        })
+      });
 
-        if (res.ok) {
-          const data: ScanResponse = await res.json();
-          setResponse(data);
-          fetchLedger();
-        } else {
-          throw new Error("Failed to process scan API");
-        }
-      } catch (err) {
-        runLocalSimulation();
+      if (res.ok) {
+        setActiveStep(3); // Replaying
+        await new Promise(r => setTimeout(r, 800));
+        setActiveStep(4); // Comparing & Ledgering
+        await new Promise(r => setTimeout(r, 600));
+
+        const data: ScanResponse = await res.json();
+        setResponse(data);
+        fetchLedger();
+      } else {
+        throw new Error("Backend unavailable — no verified decision was produced.");
       }
-    } else {
-      runLocalSimulation();
+    } catch (err) {
+      setErrorMsg("Backend unavailable — no verified decision was produced.");
+      setResponse(null);
+      setActiveStep(0);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
-  // Pure frontend simulation engine in case backend isn't available
-  const runLocalSimulation = () => {
-    // 1. Detect matching rules
-    let matchedRule: RuleMatch | null = null;
-    let templateId: string | null = null;
-    let patch1: string | null = null;
-    let patch2: string | null = null;
-
-    if (code.includes('SELECT') && code.includes('WHERE') && code.includes('+')) {
-      matchedRule = {
-        id: "rule_sql_injection",
-        name: "SQL Injection Detection",
-        pattern: "query\\s*=\\s*[\"']SELECT\\s+.*\\s+WHERE\\s+(\\w+)\\s*=\\s*[\"']\\s*\\+\\s*(\\w+)",
-        severity: "CRITICAL",
-        description: "SQL query built using string concatenation. Risk of SQL injection."
-      };
-      templateId = "template_sql_injection";
-      patch1 = code.replace(
-        /^([ \t]*)query\s*=\s*["']SELECT\s+(.*)\s+WHERE\s+(\w+)\s*=\s*["']\s*\+\s*(\w+)/m,
-        '$1query = "SELECT $2 WHERE $3 = ?"\n$1params = ($4,)'
-      );
-    } else if (code.includes('API_KEY') && code.includes('=')) {
-      matchedRule = {
-        id: "rule_hardcoded_secret",
-        name: "Hardcoded API Key Detection",
-        pattern: "([A-Z_]+_KEY)\\s*=\\s*[\"']([a-zA-Z0-9_]{6,})[\"']",
-        severity: "CRITICAL",
-        description: "Hardcoded API key detected in plaintext code."
-      };
-      templateId = "template_hardcoded_secret";
-      patch1 = `import os\n\n` + code.replace(
-        /API_KEY\s*=\s*["']([a-zA-Z0-9_]{6,})["']/,
-        'API_KEY = os.getenv("API_KEY")'
-      );
-    } else if (code.includes('subprocess.run') && code.includes('shell=True')) {
-      matchedRule = {
-        id: "rule_unsafe_shell",
-        name: "Unsafe Shell Command Detection",
-        pattern: "subprocess\\.run\\([\"'](\\w+)\\s+([a-zA-Z0-9_\\-]+)\\s*[\"']\\s*\\+\\s*(\\w+),\\s*shell=True\\)",
-        severity: "HIGH",
-        description: "Subprocess execution using shell=True with dynamic arguments. Risk of shell injection."
-      };
-      templateId = "template_unsafe_shell";
-      patch1 = code.replace(
-        /subprocess\.run\(["'](\w+)\s+([a-zA-Z0-9_\-]+)\s*["']\s*\+\s*(\w+),\s*shell=True\)/,
-        'subprocess.run(["$1", "$2", $3], shell=False)'
-      );
-    } else if (code.includes('eval(')) {
-      matchedRule = {
-        id: "rule_unsafe_eval",
-        name: "Unsafe Eval Execution Detection",
-        pattern: "eval\\(.*\\)",
-        severity: "CRITICAL",
-        description: "Unsafe use of eval() detected, allowing execution of arbitrary code strings."
-      };
-      templateId = null;
-      patch1 = null;
-      patch2 = null;
-    }
-
-    // Prepare Run 2 (Simulate mismatch if toggled)
-    if (patch1) {
-      patch2 = patch1;
-      const isMismatchScenario = code.trim() === 'query = "SELECT * FROM users WHERE id = " + user_id';
-      if (simulateNonDeterminism || isMismatchScenario) {
-        const randToken = Math.random().toString(36).substring(2, 10);
-        patch2 = patch1 + `\n\n# ReplayGuard Non-Deterministic Seed: ${randToken}`;
-      }
-    }
-
-    // Determine decisions
-    let gateDecision = "REVIEW";
-    let isMatch = true;
-    let sizeDiff = 0;
-    let diff: string | null = null;
-
-    if (matchedRule && templateId && patch1 && patch2) {
-      isMatch = !simulateNonDeterminism;
-      const isMismatchScenario = code.trim() === 'query = "SELECT * FROM users WHERE id = " + user_id';
-      if (isMismatchScenario) {
-        isMatch = false;
-      }
-      
-      if (isMatch) {
-        gateDecision = "ALLOW";
-      } else {
-        gateDecision = "BLOCK";
-        sizeDiff = patch2.length - patch1.length;
-        diff = `--- patch_run_1.py\n+++ patch_run_2.py\n@@ -5,6 +5,8 @@\n     with open(filepath, 'r') as f:\n         return f.read()\n+\n+# ReplayGuard Non-Deterministic Seed: ${patch2.split('Seed: ')[1]}`;
-      }
-    } else if (matchedRule && !templateId) {
-      gateDecision = "REVIEW";
-      isMatch = false;
-      diff = "One or both patch runs failed to generate.";
-    }
-
-    const origHash = generateMockHash(code);
-    const p1Hash = patch1 ? generateMockHash(patch1) : "";
-    const p2Hash = patch2 ? generateMockHash(patch2) : "";
-    const combinedPayload = `${origHash}|${matchedRule?.id || ''}|${templateId || ''}|${p1Hash}|${p2Hash}|${gateDecision}`;
-    const ledgerHash = generateMockHash(combinedPayload);
-
-    const record: LedgerRecord = {
-      timestamp: new Date().toISOString(),
-      original_code_hash: origHash,
-      rule_id: matchedRule?.id || null,
-      template_id: templateId,
-      patch_run_1_hash: patch1 ? p1Hash : null,
-      patch_run_2_hash: patch2 ? p2Hash : null,
-      gate_decision: gateDecision,
-      ledger_hash: ledgerHash
-    };
-
-    let explanation = "";
-    if (gateDecision === "ALLOW") {
-      if (matchedRule) {
-        if (matchedRule.id === "rule_sql_injection") {
-          explanation = "Deterministic SQL parameterization applied to prevent SQL injection.";
-        } else if (matchedRule.id === "rule_hardcoded_secret") {
-          explanation = "Hardcoded credential replaced with environment variable loading via os.getenv.";
-        } else if (matchedRule.id === "rule_unsafe_shell") {
-          explanation = "Unsafe shell=True subprocess run replaced with safe list-based execution.";
-        }
-      } else {
-        explanation = "No issues detected. Code is safe.";
-      }
-    } else if (gateDecision === "BLOCK") {
-      const isMismatchScenario = code.trim() === 'query = "SELECT * FROM users WHERE id = " + user_id';
-      if (isMismatchScenario) {
-        explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible.";
-      } else {
-        explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked.";
-      }
-    } else {
-      if (matchedRule) {
-        explanation = "Violation detected, but no deterministic remediation template is available. Human review required.";
-      } else {
-        explanation = "No matching deterministic remediation template available. Code routed to manual security review.";
-      }
-    }
-
-    const simulatedResponse: ScanResponse = {
-      original_code: code,
-      remediated_code: patch1,
-      matched_rule: matchedRule,
-      applied_template_id: templateId,
-      patch_run_1: patch1,
-      patch_run_2: patch2,
-      comparison: {
-        is_match: isMatch,
-        diff: diff,
-        size_diff_bytes: sizeDiff,
-        run_1_hash: p1Hash,
-        run_2_hash: p2Hash
-      },
-      ledger_record: record,
-      gate_decision: gateDecision,
-      explanation: explanation
-    };
-
-    setResponse(simulatedResponse);
-
-    // Save locally
-    const localHistory = localStorage.getItem('replayguard_ledger_history');
-    let history: LedgerRecord[] = localHistory ? JSON.parse(localHistory) : [];
-    history.unshift(record);
-    history = history.slice(0, 50);
-    localStorage.setItem('replayguard_ledger_history', JSON.stringify(history));
-    setLedgerHistory(history);
-  };
 
   return (
     <div className="min-h-screen pb-16">
@@ -388,9 +208,9 @@ export default function App() {
           <div className="flex items-center gap-4">
             {/* Status indicator */}
             <div className="flex items-center gap-2">
-              <span className={`h-2.5 w-2.5 rounded-full ${isBackendOnline ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-amber-500 shadow-amber-500/50'} shadow-lg`}></span>
+              <span className={`h-2.5 w-2.5 rounded-full ${isBackendOnline ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-rose-500 shadow-rose-500/50'} shadow-lg`}></span>
               <span className="text-xs text-slate-400">
-                {isBackendOnline ? 'Backend API Active' : 'Simulation Fallback Mode'}
+                {isBackendOnline ? 'Backend API Active' : 'Backend API Offline (Scanning Unavailable)'}
               </span>
             </div>
           </div>
@@ -505,7 +325,7 @@ export default function App() {
                 />
                 <div className="text-xs">
                   <label htmlFor="non-deterministic" className="font-semibold text-slate-200 hover:cursor-pointer">
-                    Simulate Non-Determinism (Replay Mismatch)
+                    Simulate Non-Determinism (Controlled Fault Injection)
                   </label>
                   <p className="text-slate-400 mt-1 leading-relaxed">
                     Injects a randomized identifier comment on Run 2. This forces a byte-level mismatch, which triggers a Merge Gate <strong>BLOCK</strong>.
@@ -542,6 +362,18 @@ export default function App() {
         {/* Right Column: Pipeline Execution & Results */}
         <section className="lg:col-span-7 flex flex-col gap-6">
           
+          {errorMsg && (
+            <div className="glass-panel border border-rose-500/20 bg-rose-950/20 text-rose-200 rounded-xl p-6 shadow-xl flex items-center gap-4">
+              <div className="bg-rose-500/20 p-3 rounded-full">
+                <XCircle className="w-8 h-8 text-rose-500" />
+              </div>
+              <div className="text-left">
+                <h3 className="text-sm font-bold text-rose-200">Verification Failure</h3>
+                <p className="text-xs text-rose-300 mt-1 leading-relaxed">{errorMsg}</p>
+              </div>
+            </div>
+          )}
+
           {/* Stepper loader */}
           {loading && (
             <div className="glass-panel rounded-xl p-8 shadow-xl flex flex-col gap-6 animate-pulse">

@@ -178,14 +178,12 @@ def scan_code(req: ScanRequest):
         else:
             explanation = "No issues detected. Code is safe."
     elif gate_decision == "BLOCK":
-        if reason_code == "EVIDENCE_PERSISTENCE_FAILED":
+        if reason_code == "REPLAY_MISMATCH":
+            explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible."
+        elif reason_code == "EVIDENCE_PERSISTENCE_FAILED":
             explanation = "Safety Violation: Ledger persistence failed. Merging blocked."
         else:
-            is_mismatch_scenario = (normalize_code(code_input).strip() == 'query = "SELECT * FROM users WHERE id = " + user_id')
-            if is_mismatch_scenario:
-                explanation = "Replay mismatch detected. Merge blocked because remediation output was not reproducible."
-            else:
-                explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked."
+            explanation = "Safety Violation: Replay verification detected non-deterministic patch generation. Merging blocked."
     elif gate_decision == "REVIEW":
         if matched_rule:
             explanation = "Violation detected, but no deterministic remediation template is available. Human review required."
